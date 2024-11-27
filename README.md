@@ -26,6 +26,7 @@
 > > - 사용자는 갤러리에 사용할 이미지의 개수를 선택할 수 있다. (최대18장)
 
 > 메인 홈페이지
+>
 > components : Invitation, Interview, Gallery, Location, Information, GuestBook, Account
 >
 > > - 배경 음악이 있다.
