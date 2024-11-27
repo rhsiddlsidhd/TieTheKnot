@@ -28,7 +28,6 @@
 > 메인 홈페이지
 >
 > components : Invitation, Interview, Gallery, Location, Information, GuestBook, Account
->
 > > - 배경 음악이 있다.
 > > - 메인 이미지와 함께 결혼식 시간 신랑 및 신부 소개하는 페이지가 있다.
 > > - 신랑 신부의 결혼식을 초대하는 한줄 코멘트 와 가족 소개 페이지가 있다.
