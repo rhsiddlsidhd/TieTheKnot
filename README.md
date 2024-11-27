@@ -1,70 +1,59 @@
-# Getting Started with Create React App
+# Tie the Knot (맺음) : 모바일 청첩장
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### 소개
 
-## Available Scripts
+- "Tie the Knot"은 사용자가 선택한 옵션에 따라 맞춤형 모바일 청첩장을 생성하고, 이를 간편하게 공유할 수 있는 서비스이다.
 
-In the project directory, you can run:
+### 언어
 
-### `npm start`
+- JAVASCRIPT
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 라이브러리
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- STYLED-COMPONENT,TYPESCRIPT , REACT
 
-### `npm test`
+### 페이지
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+> 옵션 페이지
+>
+> > - 사용자는 신부, 신랑의 성함을 기재 해야 한다.
+> > - 사용자는 신부, 신랑의 계좌번호 및 전화번호를 기재 할 수 있다.
+> > - 사용자는 메인 사진을 등록해야 한다.
+> > - 사용자는 결혼식 장소와 시간을 기재 해야 한다.
+> > - 사용자는 신부측, 신랑측 성함을 기재 할 수 있다.
+> > - 사용자는 신부측, 싱랑측 전화번호를 기재 할 수 있다.
+> > - 사용자는 갤러리에 사용할 이미지를 등록할 수 있다.
+> > - 사용자는 갤러리에 사용할 이미지의 개수를 선택할 수 있다. (최대18장)
 
-### `npm run build`
+> 메인 홈페이지
+> components : Invitation, Interview, Gallery, Location, Information, GuestBook, Account
+>
+> > - 배경 음악이 있다.
+> > - 메인 이미지와 함께 결혼식 시간 신랑 및 신부 소개하는 페이지가 있다.
+> > - 신랑 신부의 결혼식을 초대하는 한줄 코멘트 와 가족 소개 페이지가 있다.
+> > - 신랑 신부의 연락처 소개를 하며, 신랑측 신부측 연락처 소개 할 수 있다.
+> > - 캘린더를 통해 결혼식 날짜를 확인 할 수 있다.
+> > - 2X2 또는 3x3 기본 갤러리를 제공한다.
+> > - 결혼식장의 위치를 공유하는 지도를 제공하며, 길 또는 대중교통을 안내하는 페이지가 있다.
+> > - 신랑 또는 신부측 카카오페이로 축의금 전달하는 페이지가 있다.
+> > - 방명록 남길수 있는 페이지가 있다.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+> 방명록
+>
+> > - 이름을 작성해야 한다.
+> > - 비밀번호를 작성해야 한다.
+> > - 내용을 작성해야 한다.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 기능
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+> 메인 홈페이지
+>
+> > - 배경 음악 on/off 기능이 있다.
+> > - 연락하기 Icon 클릭시 등록된 전화번호로 전화APP 연결 (a태그 href:tel)
+> > - 기본 갤러리 이외는 HIDE 및 더보기 버튼
+> > - 갤러리 타입 제공 ex) 1:1:1:1 2:1:1...
+> > - 캘린더를 통해 결혼식날 체크 및 D-Day 제공
+> > - 지도 하단에 약도 이미지 제공하는 버튼
+> > - 지도페이지 하단에 카카오지도, 네이버지도 위치 연결
+> > - 방명록 더보기 버튼 및 작성하기 버튼
+> > - 신랑측 그리고 신부측 계좌번호 토글 버튼 (계좌 복사 또는 카카오 페이 연동)
