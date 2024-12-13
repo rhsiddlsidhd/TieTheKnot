@@ -26,8 +26,8 @@
 > > - 사용자는 갤러리에 사용할 이미지의 개수를 선택할 수 있다. (최대18장)
 
 > 메인 홈페이지
+> components : Main,Invitation, Interview, Gallery, Location, Information, GuestBook, Account
 >
-> components : Invitation, Interview, Gallery, Location, Information, GuestBook, Account
 > > - 배경 음악이 있다.
 > > - 메인 이미지와 함께 결혼식 시간 신랑 및 신부 소개하는 페이지가 있다.
 > > - 신랑 신부의 결혼식을 초대하는 한줄 코멘트 와 가족 소개 페이지가 있다.
@@ -57,3 +57,9 @@
 > > - 지도페이지 하단에 카카오지도, 네이버지도 위치 연결
 > > - 방명록 더보기 버튼 및 작성하기 버튼
 > > - 신랑측 그리고 신부측 계좌번호 토글 버튼 (계좌 복사 또는 카카오 페이 연동)
+
+### CSS
+
+- 모바일 max-width: 767px ( 0 ~ 767)
+- 태블릿 max-width: 1028px (768~1028)
+- 브라우저 min-width:1028px (max-width:1028px 고정된 너비 설정)
