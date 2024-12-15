@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App";
 import { BrowserRouter, Route, Router, Routes } from "react-router";
 import Main from "./pages/Main";
-import Tset from "./pages/Tset";
+import Tset from "./tests/gallery/Tset";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
