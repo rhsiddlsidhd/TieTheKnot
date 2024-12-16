@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { media } from "../styles/media";
 import "../App.css";
+import { weddingDate } from "../tests/calendar/data";
+import DdayCountDown from "../components/DdayCountDown";
+
 type CurrentDate = {
   year: number;
   month: number;
@@ -16,33 +19,70 @@ type CurrentTime = {
 };
 
 const Main = () => {
-  const today = new Date();
+  const newDate = new Date(weddingDate);
 
-  const [currentDate] = useState<CurrentDate>({
-    year: today.getFullYear(),
-    month: today.getMonth() + 1,
-    date: today.getDate(),
-    day: today.getDay(),
-  });
-
-  const { year, month, date, day } = currentDate;
-
-  const handleWeekdays = (day: number) => {
-    let dayCopy = day;
-    const weekdays = [
-      "일요일",
-      "월요일",
-      "화요일",
-      "수요일",
-      "목요일",
-      "금요일",
-      "토요일",
-      "일요일",
-    ];
-    return weekdays[dayCopy];
+  const weddingDay = {
+    year: newDate.getFullYear(),
+    month: newDate.getMonth() + 1,
+    date: newDate.getDate(),
+    day: newDate.getDay(),
   };
 
-  const weekdaysText = handleWeekdays(day);
+  const weddingTime = {
+    hours: newDate.getHours(),
+    minutes: newDate.getMinutes(),
+  };
+
+  const { year, month, date, day } = weddingDay;
+  const { hours, minutes } = weddingTime;
+
+  const weekdaysOfKr = [
+    "일요일",
+    "월요일",
+    "화요일",
+    "수요일",
+    "목요일",
+    "금요일",
+    "토요일",
+  ];
+
+  const weekdaysOfEng = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const convertToAMPM = (hours: number, minutes: number): string => {
+    let period = hours > 12 ? "오후" : "오전";
+    let hours12 = hours % 12 === 0 ? 12 : hours % 12;
+    let minutesZero = minutes < 10 ? `0${minutes}` : minutes;
+
+    return `${period} ${hours12}시 ${minutesZero}분`;
+  };
+
+  const getDayOfMonth = (year: number, month: number) => {
+    const dayInMonth = [];
+    const start = new Date(year, month - 1, 1).getDay();
+
+    for (let i = 0; i < start; i++) {
+      dayInMonth.push(undefined);
+    }
+
+    const length = new Date(year, month, 0).getDate();
+    for (let i = 1; i <= length; i++) {
+      dayInMonth.push(i);
+    }
+
+    return dayInMonth;
+  };
+
+  let dayArr = getDayOfMonth(year, month);
+
+  let time = convertToAMPM(hours, minutes);
 
   return (
     <div className="App">
@@ -53,7 +93,7 @@ const Main = () => {
             <div>
               {year}/{month}/{date}
             </div>
-            <div>{weekdaysText}</div>
+            <div>{weekdaysOfEng[day]}</div>
           </SectionHeader>
           <ImgWrapper $thumnail>
             <img
@@ -150,7 +190,6 @@ const Main = () => {
             <h3>우리의 순간</h3>
           </SectionHeader>
           <GalleryWrapper>
-            {}
             <img
               className="items item1"
               src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
@@ -167,6 +206,51 @@ const Main = () => {
               alt="이미지"
             />
           </GalleryWrapper>
+          <CalendarWrapper>
+            <h1>{`${year}.${month}.${date}`}</h1>
+            <h3
+              style={{ fontWeight: "100" }}
+            >{`${weekdaysOfKr[day]} ${time}`}</h3>
+            <CalendarSection>
+              <DayWrapper>
+                {weekdaysOfKr.map((v, i) => {
+                  const redColor = v === "일요일" ? "red" : "black";
+                  return (
+                    <div style={{ color: redColor }} key={i}>
+                      {v[0]}
+                    </div>
+                  );
+                })}
+              </DayWrapper>
+              <DateWrapper>
+                {dayArr.map((v, i) => {
+                  const isSunday = new Date(year, month - 1, v).getDay();
+                  let sunDay = isSunday === 0 ? "sunDay" : "";
+                  let dDay = v === date ? "dDay" : "";
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        borderRadius: "20px",
+                      }}
+                      className={`${sunDay} ${dDay} `}
+                    >
+                      {v}
+                    </div>
+                  );
+                })}
+              </DateWrapper>
+            </CalendarSection>
+            <DdayCountDown />
+          </CalendarWrapper>
+        </WeddingInvitationContainer>
+        <WeddingInvitationContainer>
+          <LocationWrapper>
+            <SectionHeader>
+              <p>Location</p>
+              <h3>오시는 길</h3>
+            </SectionHeader>
+          </LocationWrapper>
         </WeddingInvitationContainer>
       </Layout>
     </div>
@@ -174,12 +258,51 @@ const Main = () => {
 };
 
 export default Main;
+const CalendarWrapper = styled.div`
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3rem;
+`;
+
+const CalendarSection = styled.div`
+  width: 66%;
+  padding: 1rem 0;
+  margin-top: 1rem;
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #eeeeee;
+`;
+
+const DayWrapper = styled.div`
+  display: flex;
+
+  > div {
+    width: calc(100% / 7);
+  }
+`;
+
+const DateWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  > div {
+    width: calc(100% / 7);
+  }
+  .sunDay {
+    color: red;
+  }
+  .dDay {
+    color: white;
+    background-color: pink;
+  }
+`;
+
+const LocationWrapper = styled.div``;
 
 const GalleryWrapper = styled.div`
   display: grid;
   width: 90%;
-  /* grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 8rem; */
+
   grid-gap: 1rem;
   padding: 1rem;
   grid-template-areas:
@@ -224,7 +347,6 @@ const WeddingInvitationContainer = styled.div`
   flex-direction: column;
   align-items: center;
 
-  padding-bottom: 2rem; //임의
   > .mb-3 {
     margin-bottom: 3rem;
   }
