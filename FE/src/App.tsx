@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import Main from "./pages/Main";
 
 import Register from "./pages/Register";
-import Tset from "./tests/calendar/Test";
+import Test from "./tests/daum/Test";
 
 type Item = {
   quantity: number;
@@ -17,8 +17,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/main" element={<Main />} />
-        <Route path="/test" element={<Tset />} />
+        <Route path="/" element={<Main />} />
+        <Route path="/test" element={<Test />} />
         <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>

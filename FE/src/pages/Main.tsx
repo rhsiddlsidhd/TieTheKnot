@@ -1,22 +1,10 @@
-import React, { useState } from "react";
 import styled from "styled-components";
 import { media } from "../styles/media";
 import "../App.css";
 import { weddingDate } from "../tests/calendar/data";
 import DdayCountDown from "../components/DdayCountDown";
-
-type CurrentDate = {
-  year: number;
-  month: number;
-  date: number;
-  day: number;
-};
-
-type CurrentTime = {
-  hour: number | null;
-  minutes: number | null;
-  seconds: number | null;
-};
+import Location from "../components/Location";
+import { Map } from "react-kakao-maps-sdk";
 
 const Main = () => {
   const newDate = new Date(weddingDate);
@@ -244,14 +232,7 @@ const Main = () => {
             <DdayCountDown />
           </CalendarWrapper>
         </WeddingInvitationContainer>
-        <WeddingInvitationContainer>
-          <LocationWrapper>
-            <SectionHeader>
-              <p>Location</p>
-              <h3>오시는 길</h3>
-            </SectionHeader>
-          </LocationWrapper>
-        </WeddingInvitationContainer>
+        <Location />
       </Layout>
     </div>
   );
@@ -341,7 +322,7 @@ const Layout = styled.div`
     `} */
 `;
 
-const WeddingInvitationContainer = styled.div`
+export const WeddingInvitationContainer = styled.div`
   padding-top: 5rem;
   display: flex;
   flex-direction: column;
@@ -361,7 +342,7 @@ const MusicIconBox = styled.div`
   justify-content: end;
 `;
 
-const SectionHeader = styled.section<{ $isfirstsection?: boolean }>`
+export const SectionHeader = styled.section<{ $isfirstsection?: boolean }>`
   color: ${(props) => (props.$isfirstsection ? "black" : "pink")};
   margin-bottom: ${(props) => (props.$isfirstsection ? "0" : "3rem")};
   width: 100%;
