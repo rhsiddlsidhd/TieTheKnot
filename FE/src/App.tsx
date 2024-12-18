@@ -3,6 +3,7 @@ import Main from "./pages/Main";
 
 import Register from "./pages/Register";
 import Test from "./tests/daum/Test";
+import Navitest from "./tests/location/Navitest";
 
 type Item = {
   quantity: number;
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/navitest" element={<Navitest />} />
         <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>

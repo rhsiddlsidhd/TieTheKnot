@@ -51,11 +51,11 @@ const DdayCountDown: React.FC = () => {
     <CountdonwContainer>
       <section>
         {Object.entries(countdown).map(([key, value], i) => {
-          const border = i !== 0 ? "1px solid #eeeeee" : "";
+          const hasBorder = i !== 0 ? "has_border" : "";
           return (
-            <div>
+            <div key={i}>
               <div>{key}</div>
-              <div style={{ borderLeft: border }}>{value}</div>
+              <div className={hasBorder}>{value}</div>
             </div>
           );
         })}
@@ -80,11 +80,30 @@ export default DdayCountDown;
 const CountdonwContainer = styled.div`
   margin-top: 1rem;
   width: 50%;
-  > section:first-child {
+
+  & > section:first-child {
     display: flex;
     margin-bottom: 1rem;
     & > div {
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      & > .has_border {
+        border-left: 1px solid #eeeeee;
+      }
     }
+
+    @media (max-width: 300px) {
+      flex-wrap: wrap;
+      & > div {
+        & > .has_border {
+          border: none;
+        }
+      }
+    }
+  }
+
+  & > section {
+    width: 100%;
   }
 `;

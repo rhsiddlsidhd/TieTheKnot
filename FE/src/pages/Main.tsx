@@ -391,7 +391,7 @@ const ContentWrapper = styled.div`
   }
 `;
 
-const BtnWrapper = styled.div`
+export const BtnWrapper = styled.div`
   width: 80%;
   & > button {
     width: 100%;
