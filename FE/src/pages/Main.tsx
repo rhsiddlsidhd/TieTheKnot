@@ -391,7 +391,7 @@ const ContentWrapper = styled.div`
   }
 `;
 
-export const BtnWrapper = styled.div`
+export const BtnWrapper = styled.div<{ nav?: boolean }>`
   width: 80%;
   & > button {
     width: 100%;
@@ -399,6 +399,11 @@ export const BtnWrapper = styled.div`
     border-radius: 0.5rem;
     border: 2px solid #f0f0f0;
     background-color: white;
+    font-family: "Cute Font", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.5rem 0;
   }
   & > button:hover {
     cursor: pointer;

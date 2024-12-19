@@ -12,7 +12,7 @@ import {
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { useEffect, useState } from "react";
 import axiosinstance from "../axios/interceptors/interceptors";
-
+import Subway from "./Subway";
 interface GeoProps {
   lng: null | number;
   lat: null | number;
@@ -36,7 +36,7 @@ const Location = () => {
       );
 
       if (res.status !== 200) {
-        throw new Error("좌표받아오기 응답 실패");
+        throw new Error("좌표 받아오기 응답 실패");
       }
 
       const data = res.data.documents[0];
@@ -58,6 +58,12 @@ const Location = () => {
     getCoordinatesFromAddress(weddingAddress);
   }, []);
 
+  const iconsPath = [
+    { name: "네이버지도", path: "navermap.webp" },
+    { name: "카카오지도", path: "kakaomap.png" },
+    { name: "티맵", path: "tmap.svg" },
+  ];
+
   return (
     <WeddingInvitationContainer>
       <SectionHeader>
@@ -69,7 +75,7 @@ const Location = () => {
         <div>{weddingAddress}</div>
         <div>{weddingTell}</div>
       </section>
-      <MapSection style={{ width: "90%" }}>
+      <MapSection>
         <Map
           center={{
             lat: geoState.lat || 37.7156659940161,
@@ -85,25 +91,37 @@ const Location = () => {
             }}
           ></MapMarker>
         </Map>
-        <BtnWrapper>{/* <button>약도 이미지 보기</button> */}</BtnWrapper>
+        <BtnWrapper>
+          <button>약도 이미지 보기</button>
+        </BtnWrapper>
         <NaviWrapper>
-          <h3>네비게이션</h3>
-          <p>원하시는 앱을 선택하시면 길 안내가 시작됩니다</p>
+          <h4>네비게이션</h4>
+          <p>원하시는 앱을 선택하시면 길 안내가 시작됩니다.</p>
           <BtnWrapper
             style={{
-              flexDirection: "row",
-              flex: "1",
               width: "100%",
-              marginBottom: "1rem",
             }}
           >
-            <button style={{ width: "33%" }}>1</button>
-            <button style={{ width: "33%" }}>2</button>
-            <button style={{ width: "33%" }}>3</button>
+            {iconsPath.map((icons, i) => {
+              return (
+                <button>
+                  <img
+                    src={`${process.env.REACT_APP_IMAGE_BASE_URL}/${icons.path}`}
+                    alt="map"
+                    style={{
+                      width: "1rem",
+                      height: "1rem",
+                      marginRight: "0.5rem",
+                    }}
+                  />
+                  <span>{icons.name}</span>
+                </button>
+              );
+            })}
           </BtnWrapper>
         </NaviWrapper>
       </MapSection>
-      <div>1234</div>
+      <Subway />
     </WeddingInvitationContainer>
   );
 };
@@ -111,17 +129,23 @@ const Location = () => {
 export default Location;
 
 const MapSection = styled.div`
+  width: 90%;
   display: flex;
   flex-direction: column;
   align-items: center;
   border-bottom: 1px solid #eeeeee;
+  padding-bottom: 1rem;
 `;
 
-const NaviWrapper = styled.div`
+export const NaviWrapper = styled.div`
+  margin-top: 1rem;
   width: 80%;
-  & > h3,
-  p {
+
+  & > p,
+  h4 {
     display: flex;
-    margin-bottom: 1rem;
+  }
+  & > p {
+    color: #999999;
   }
 `;

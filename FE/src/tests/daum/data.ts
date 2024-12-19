@@ -4,3 +4,4 @@ export const weddingAddressDetail =
 export const weddingTell = "02-2111-4525";
 export const x = 37.6121685408368;
 export const y = 127.152554399033;
+export const subwayStation = "다산역";
