@@ -8,7 +8,7 @@ const Subway = () => {
     try {
       const startIndex = 1;
       const endIndex = 10;
-      const inputSubway = " 서울대입구";
+      const inputSubway = " 서울역";
 
       const res = await subwayInstance.get(
         `/${startIndex}/${endIndex}/ /${inputSubway}`
