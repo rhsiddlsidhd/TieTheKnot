@@ -27,50 +27,62 @@ const Test = () => {
 
   useEffect(() => {
     getAllSubwayStationApi();
+    console.log(process.env.NODE_ENV);
   }, []);
 
-  const getAllSubwayStationApi = async () => {
-    try {
-      const startIndex = 1;
-      const endIndex = 1000;
+  const getAllSubwayStationApi = async (): Promise<
+    SearchInfoBySubwayNameService[]
+  > => {
+    const startIndex = 1;
+    const endIndex = 1000;
 
-      const res = await searchInstance.get(`${startIndex}/${endIndex}/`);
-      if (res.status !== 200) {
-        throw new Error("fail >>");
-      }
-
-      const data = res.data.SearchInfoBySubwayNameService.row;
-      const dictionaryLineData = fotmatLineNumColorToMap(data);
-      const uniqueStationData = formatStationToSet(data);
-
-      setStationLineColors(dictionaryLineData);
-      setStationList(uniqueStationData);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        console.error("server Error >>", e.message);
-      }
+    const res = await searchInstance.get(`${startIndex}/${endIndex}/ `);
+    if (res.status !== 200) {
+      throw new Error("fail >>");
     }
+
+    const data = res.data.SearchInfoBySubwayNameService.row;
+    const dictionaryLineData = fotmatLineNumColorToMap(data);
+    const uniqueStationData = formatStationToSet(data);
+
+    setStationLineColors(dictionaryLineData);
+    setStationList(uniqueStationData);
+    return res.data;
   };
 
-  const getSubwayStationLineApi = async (props: string) => {
+  const getSubwayStationLineApi = async (
+    props: string
+  ): Promise<SearchSTNBySubwayLineInfo[]> => {
+    const station = ` /${props}`;
+    const startIndex = 1;
+    const endIndex = 10;
     try {
-      const station = ` /${props}`;
-      const startIndex = 1;
-      const endIndex = 10;
       const res = await subwayLineInstance.get(
-        `/${startIndex}/${endIndex}/${station}`
+        `/${startIndex}/${endIndex}/${station}/`
       );
+      console.log(res);
 
-      const data = res.data.SearchSTNBySubwayLineInfo.row;
-      setSelectedLineColor(formatLineNumToArray(data));
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        console.error("server Error >>", e.message);
+      if (res.statusText !== "OK") {
+        throw new Error(res.data.MESSAGE._cdata);
       }
+
+      return res.data.SearchSTNBySubwayLineInfo.row;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        const { message, name } = error;
+        console.error({ message, name });
+      } else {
+        console.error(error);
+      }
+
+      throw error;
     }
   };
 
   const formatLineNumToArray = (data: SearchSTNBySubwayLineInfo[]) => {
+    if (!Array.isArray(data)) {
+      throw new Error("Input data is not an array");
+    }
     const dataCopy = data.slice();
     return [...new Set(dataCopy.map((item) => item.LINE_NUM).sort())];
   };
@@ -126,9 +138,11 @@ const Test = () => {
     setSelectedStation(props);
   };
 
-  const onSubwayLineClick = (props: string) => {
+  const onSubwayLineClick = async (props: string): Promise<void> => {
     if (props === "") return;
-    getSubwayStationLineApi(props);
+
+    const data = await getSubwayStationLineApi(props);
+    setSelectedLineColor(formatLineNumToArray(data));
   };
 
   const onQueryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
