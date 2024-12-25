@@ -1,19 +1,12 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import searchInstance from "../../axios/interceptorsSubway/interceptorsSearch";
-import subwayLineInstance from "../../axios/interceptorsSubway/interceptorsSubway";
 
 interface SearchInfoBySubwayNameService {
   FR_CODE: string;
   LINE_NUM: string;
   STATION_CD: string;
   STATION_NM: string;
-}
-
-interface SearchSTNBySubwayLineInfo extends SearchInfoBySubwayNameService {
-  STATION_NM_CHN: string;
-  STATION_NM_ENG: string;
-  STATION_NM_JPN: string;
 }
 
 const Test = () => {
@@ -26,8 +19,12 @@ const Test = () => {
   const [selectedLineColor, setSelectedLineColor] = useState<string[]>([]);
 
   useEffect(() => {
-    getAllSubwayStationApi();
-    console.log(process.env.NODE_ENV);
+    const fetchData = async () => {
+      const data = await getAllSubwayStationApi();
+      setStationList(formatStationToSet(data));
+      setStationLineColors(fotmatLineNumColorToMap(data));
+    };
+    fetchData();
   }, []);
 
   const getAllSubwayStationApi = async (): Promise<
@@ -37,49 +34,20 @@ const Test = () => {
     const endIndex = 1000;
 
     const res = await searchInstance.get(`${startIndex}/${endIndex}/ `);
-    if (res.status !== 200) {
-      throw new Error("fail >>");
-    }
 
     const data = res.data.SearchInfoBySubwayNameService.row;
-    const dictionaryLineData = fotmatLineNumColorToMap(data);
-    const uniqueStationData = formatStationToSet(data);
-
-    setStationLineColors(dictionaryLineData);
-    setStationList(uniqueStationData);
-    return res.data;
+    return data;
   };
 
-  const getSubwayStationLineApi = async (
+  const getSelectedSubwayStation = async (
     props: string
-  ): Promise<SearchSTNBySubwayLineInfo[]> => {
-    const station = ` /${props}`;
-    const startIndex = 1;
-    const endIndex = 10;
-    try {
-      const res = await subwayLineInstance.get(
-        `/${startIndex}/${endIndex}/${station}/`
-      );
-      console.log(res);
-
-      if (res.statusText !== "OK") {
-        throw new Error(res.data.MESSAGE._cdata);
-      }
-
-      return res.data.SearchSTNBySubwayLineInfo.row;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        const { message, name } = error;
-        console.error({ message, name });
-      } else {
-        console.error(error);
-      }
-
-      throw error;
-    }
+  ): Promise<SearchInfoBySubwayNameService[]> => {
+    const res = await searchInstance.get(`1/5/${props}`);
+    const data = res.data.SearchInfoBySubwayNameService.row;
+    return data;
   };
 
-  const formatLineNumToArray = (data: SearchSTNBySubwayLineInfo[]) => {
+  const formatLineNumToArray = (data: SearchInfoBySubwayNameService[]) => {
     if (!Array.isArray(data)) {
       throw new Error("Input data is not an array");
     }
@@ -87,7 +55,7 @@ const Test = () => {
     return [...new Set(dataCopy.map((item) => item.LINE_NUM).sort())];
   };
 
-  const fotmatLineNumColorToMap = (data: SearchSTNBySubwayLineInfo[]) => {
+  const fotmatLineNumColorToMap = (data: SearchInfoBySubwayNameService[]) => {
     if (!data) return new Map();
     const setColor = [
       "#263C96",
@@ -141,7 +109,7 @@ const Test = () => {
   const onSubwayLineClick = async (props: string): Promise<void> => {
     if (props === "") return;
 
-    const data = await getSubwayStationLineApi(props);
+    const data = await getSelectedSubwayStation(props);
     setSelectedLineColor(formatLineNumToArray(data));
   };
 
