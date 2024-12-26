@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import searchInstance from "../../axios/interceptorsSubway/interceptorsSearch";
+import subway from "../../apis/utils/instanceOfSubway";
 
 interface SearchInfoBySubwayNameService {
   FR_CODE: string;
@@ -17,7 +17,7 @@ const Test = () => {
   >(new Map());
   const [selectedStation, setSelectedStation] = useState<string>("");
   const [selectedLineColor, setSelectedLineColor] = useState<string[]>([]);
-
+  console.log(selectedLineColor);
   useEffect(() => {
     const fetchData = async () => {
       const data = await getAllSubwayStationApi();
@@ -30,21 +30,39 @@ const Test = () => {
   const getAllSubwayStationApi = async (): Promise<
     SearchInfoBySubwayNameService[]
   > => {
-    const startIndex = 1;
-    const endIndex = 1000;
+    try {
+      const startIndex = 1;
+      const endIndex = 1000;
 
-    const res = await searchInstance.get(`${startIndex}/${endIndex}/ `);
+      const res = await subway.get(`${startIndex}/${endIndex}/ `);
 
-    const data = res.data.SearchInfoBySubwayNameService.row;
-    return data;
+      const data = res.data.SearchInfoBySubwayNameService.row;
+      return data;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
+  /**
+   *
+   * 현재 이 API가 호출되는 시점은 마운트가 되었을 때
+   * state 값 = 지하철역 이 있으면 바로 보여주기 위함
+   *
+   *
+   */
   const getSelectedSubwayStation = async (
     props: string
   ): Promise<SearchInfoBySubwayNameService[]> => {
-    const res = await searchInstance.get(`1/5/${props}`);
-    const data = res.data.SearchInfoBySubwayNameService.row;
-    return data;
+    try {
+      const res = await subway.get(`1/5/${props}`);
+      const data = res.data.SearchInfoBySubwayNameService.row;
+
+      return data;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
   const formatLineNumToArray = (data: SearchInfoBySubwayNameService[]) => {

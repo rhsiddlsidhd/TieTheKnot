@@ -1,17 +1,6 @@
 import axios from "axios";
 import { xml2json } from "xml-js";
-import {
-  AxiosError,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-  AxiosInstance,
-} from "axios";
-const TYPE = "json";
-const SERVICE = "SearchInfoBySubwayNameService";
-
-const searchInstance = axios.create({
-  baseURL: `http://openAPI.seoul.go.kr:8088/${process.env.REACT_APP_SUBWAY_API_KEY}/${TYPE}/${SERVICE}/`,
-});
+import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 interface ErrorJSON {
   RESULT: {
@@ -25,25 +14,23 @@ interface ErrorJSON {
   };
 }
 
-// 요청 인터셉터 추가하기
-searchInstance.interceptors.request.use(
+const subway = axios.create({
+  baseURL: `${process.env.REACT_APP_SUBWAY_BASE_URL}/${process.env.REACT_APP_SUBWAY_API_KEY}/json/SearchInfoBySubwayNameService/`,
+});
+
+subway.interceptors.request.use(
   function (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
-    // 요청이 전달되기 전에 작업 수행
     const { method, url } = config;
     isDev(`[API] | REQUEST | ${method?.toUpperCase()} | ${url} `);
     return config;
   },
   function (error: AxiosError): Promise<AxiosError> {
-    // 요청 오류가 있는 작업 수행
     return Promise.reject(error);
   }
 );
 
-// 응답 인터셉터 추가하기
-searchInstance.interceptors.response.use(
+subway.interceptors.response.use(
   function (response: AxiosResponse): AxiosResponse | Promise<AxiosResponse> {
-    // 2xx 범위에 있는 상태 코드는 이 함수를 트리거 합니다.
-    // 응답 데이터가 있는 작업 수행
     if (!response.headers["content-type"].includes("json")) {
       const errorJSON = JSON.parse(
         xml2json(response.data, { compact: true, spaces: 4 })
@@ -57,8 +44,6 @@ searchInstance.interceptors.response.use(
     return response;
   },
   function (error: AxiosError): Promise<AxiosError> {
-    // 2xx 외의 범위에 있는 상태 코드는 이 함수를 트리거 합니다.
-    // 응답 오류가 있는 작업 수행
     return Promise.reject(error);
   }
 );
@@ -78,4 +63,4 @@ const onErrorResponse = (errorJSON: ErrorJSON) => {
   };
 };
 
-export default searchInstance;
+export default subway;

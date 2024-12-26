@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { weddingDate } from "../tests/calendar/data";
+import { weddingDate } from "../../tests/calendar/data";
+import { calculateCountdown } from "../../utils/dateUtils";
 
 type TimeStamp = {
   days: number;
@@ -8,44 +9,29 @@ type TimeStamp = {
   minutes: number;
   seconds: number;
 };
-const DdayCountDown: React.FC = () => {
+const CountdownSections: React.FC = () => {
+  const newDate = new Date(`${weddingDate}:00`);
+  const weddingDateSeconds = Math.floor(newDate.getTime() / 1000);
+  const currentDateSeconds = Math.floor(new Date().getTime() / 1000);
   const [countdown, setCountdown] = useState<TimeStamp>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
-  const newDate = new Date(`${weddingDate}:00`);
-  const weddingDateSeconds = Math.floor(newDate.getTime() / 1000);
-
-  const currentDateSeconds = Math.floor(new Date().getTime() / 1000);
-  const { days, hours, minutes } = countdown;
-
-  const solution = (weddingDateSeconds: number, currentDateSeconds: number) => {
-    const remainingTime = weddingDateSeconds - currentDateSeconds;
-    let days = Math.floor(remainingTime / (60 * 60 * 24));
-    days = Math.max(0, days);
-    let hours = Math.floor((remainingTime % (60 * 60 * 24)) / (60 * 60));
-    hours = Math.max(0, hours);
-    let minutes = Math.floor((remainingTime % (60 * 60)) / 60);
-    minutes = Math.max(0, minutes);
-    let seconds = Math.floor(remainingTime % 60);
-    seconds = Math.max(0, seconds);
-
-    return { days, hours, minutes, seconds };
-  };
 
   useEffect(() => {
-    const { days, hours, minutes, seconds } = solution(
+    const { days, hours, minutes, seconds } = calculateCountdown(
       weddingDateSeconds,
       currentDateSeconds
     );
-
     let id = setInterval(() => {
       setCountdown({ days, hours, minutes, seconds });
     }, 1000);
     return () => clearInterval(id);
   }, [weddingDateSeconds, currentDateSeconds]);
+
+  const { days, hours, minutes } = countdown;
 
   return (
     <CountdonwContainer>
@@ -75,7 +61,7 @@ const DdayCountDown: React.FC = () => {
   );
 };
 
-export default DdayCountDown;
+export default CountdownSections;
 
 const CountdonwContainer = styled.div`
   margin-top: 1rem;

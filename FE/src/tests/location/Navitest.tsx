@@ -12,15 +12,13 @@ const Navitest: React.FC = () => {
     lat: null,
     lon: null,
   });
-  console.log("1");
-  console.log("2", currentPosition);
 
   const getCurrentPosition = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setCurrentPosition({
-          lat: position.coords.latitude,
           lon: position.coords.longitude,
+          lat: position.coords.latitude,
         });
       },
       (err) => {
@@ -29,7 +27,6 @@ const Navitest: React.FC = () => {
     );
   };
 
-  // 위치를 가져오는 useEffect
   useEffect(() => {
     getCurrentPosition();
   }, []);

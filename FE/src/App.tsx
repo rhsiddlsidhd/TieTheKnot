@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import Main from "./pages/Main";
 
 import Register from "./pages/Register";
-import Test from "./tests/bus/Test";
+import Test from "./tests/subway/Test";
 import Navitest from "./tests/location/Navitest";
 
 type Item = {

@@ -2,9 +2,29 @@ import styled from "styled-components";
 import { media } from "../styles/media";
 import "../App.css";
 import { weddingDate } from "../tests/calendar/data";
-import DdayCountDown from "../components/DdayCountDown";
-import Location from "../components/Location";
-import { Map } from "react-kakao-maps-sdk";
+
+import {
+  weddingAddress,
+  weddingAddressDetail,
+  weddingTell,
+} from "../tests/daum/data";
+import MapSections from "../components/locations/MapSections";
+import Subway from "../components/locations/SubwaySections";
+
+import { convertToAMPM } from "../utils/dateUtils";
+import Calender from "../components/calenders/CalenderSections";
+import CountdownSections from "../components/calenders/CountdownSections";
+import CalenderSections from "../components/calenders/CalenderSections";
+
+import SubwaySections from "../components/locations/SubwaySections";
+import BusSections from "../components/locations/BusSections";
+
+export interface WeddingDay {
+  year: number;
+  month: number;
+  date: number;
+  day: number;
+}
 
 const Main = () => {
   const newDate = new Date(weddingDate);
@@ -43,32 +63,6 @@ const Main = () => {
     "Friday",
     "Saturday",
   ];
-
-  const convertToAMPM = (hours: number, minutes: number): string => {
-    let period = hours > 12 ? "오후" : "오전";
-    let hours12 = hours % 12 === 0 ? 12 : hours % 12;
-    let minutesZero = minutes < 10 ? `0${minutes}` : minutes;
-
-    return `${period} ${hours12}시 ${minutesZero}분`;
-  };
-
-  const getDayOfMonth = (year: number, month: number) => {
-    const dayInMonth = [];
-    const start = new Date(year, month - 1, 1).getDay();
-
-    for (let i = 0; i < start; i++) {
-      dayInMonth.push(undefined);
-    }
-
-    const length = new Date(year, month, 0).getDate();
-    for (let i = 1; i <= length; i++) {
-      dayInMonth.push(i);
-    }
-
-    return dayInMonth;
-  };
-
-  let dayArr = getDayOfMonth(year, month);
 
   let time = convertToAMPM(hours, minutes);
 
@@ -199,40 +193,24 @@ const Main = () => {
             <h3
               style={{ fontWeight: "100" }}
             >{`${weekdaysOfKr[day]} ${time}`}</h3>
-            <CalendarSection>
-              <DayWrapper>
-                {weekdaysOfKr.map((v, i) => {
-                  const redColor = v === "일요일" ? "red" : "black";
-                  return (
-                    <div style={{ color: redColor }} key={i}>
-                      {v[0]}
-                    </div>
-                  );
-                })}
-              </DayWrapper>
-              <DateWrapper>
-                {dayArr.map((v, i) => {
-                  const isSunday = new Date(year, month - 1, v).getDay();
-                  let sunDay = isSunday === 0 ? "sunDay" : "";
-                  let dDay = v === date ? "dDay" : "";
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        borderRadius: "20px",
-                      }}
-                      className={`${sunDay} ${dDay} `}
-                    >
-                      {v}
-                    </div>
-                  );
-                })}
-              </DateWrapper>
-            </CalendarSection>
-            <DdayCountDown />
+            <Calender weddingDay={weddingDay} weekdaysOfKr={weekdaysOfKr} />
+            <CountdownSections />
           </CalendarWrapper>
         </WeddingInvitationContainer>
-        <Location />
+        <WeddingInvitationContainer>
+          <SectionHeader>
+            <p>Location</p>
+            <h3>오시는 길</h3>
+          </SectionHeader>
+          <section>
+            <div>{weddingAddressDetail}</div>
+            <div>{weddingAddress}</div>
+            <div>{weddingTell}</div>
+          </section>
+          <MapSections />
+          <SubwaySections />
+          <BusSections />
+        </WeddingInvitationContainer>
       </Layout>
     </div>
   );
@@ -245,37 +223,6 @@ const CalendarWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   margin-top: 3rem;
-`;
-
-const CalendarSection = styled.div`
-  width: 66%;
-  padding: 1rem 0;
-  margin-top: 1rem;
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #eeeeee;
-`;
-
-const DayWrapper = styled.div`
-  display: flex;
-
-  > div {
-    width: calc(100% / 7);
-  }
-`;
-
-const DateWrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  > div {
-    width: calc(100% / 7);
-  }
-  .sunDay {
-    color: red;
-  }
-  .dDay {
-    color: white;
-    background-color: pink;
-  }
 `;
 
 const LocationWrapper = styled.div``;
