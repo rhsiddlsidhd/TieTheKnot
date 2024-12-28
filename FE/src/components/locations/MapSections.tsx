@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { GeoProps } from "../../apis/api/location/kakaoMap/types";
 import { Map, MapMarker, useKakaoLoader } from "react-kakao-maps-sdk";
@@ -9,19 +9,21 @@ import {
 import { weddingAddress } from "../../tests/daum/data";
 import { BtnWrapper } from "../../pages/Main";
 import NaviSections from "./NaviSections";
+interface MapSectionsProps {
+  currentGeoState: GeoProps;
+  geoState: GeoProps;
+  setCurrentGeoState: React.Dispatch<React.SetStateAction<GeoProps>>;
+  setGeoState: React.Dispatch<React.SetStateAction<GeoProps>>;
+}
 
-const MapSections = () => {
+const MapSections = ({
+  currentGeoState,
+  geoState,
+  setCurrentGeoState,
+  setGeoState,
+}: MapSectionsProps) => {
   const [loading] = useKakaoLoader({
     appkey: `${process.env.REACT_APP_KAKAO_MAP_API_KEY}`,
-  });
-
-  const [currentGeoState, setCurrentGeoState] = useState<GeoProps>({
-    lng: null,
-    lat: null,
-  });
-  const [geoState, setGeoState] = useState<GeoProps>({
-    lng: null,
-    lat: null,
   });
 
   useEffect(() => {
@@ -36,7 +38,7 @@ const MapSections = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [setCurrentGeoState]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,7 +55,7 @@ const MapSections = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [setGeoState]);
 
   return (
     <>

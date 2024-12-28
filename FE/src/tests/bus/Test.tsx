@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { x, y } from "../daum/data";
-import businstance from "../../axios/interceptorsSubway/interceptorsBus";
+import bus from "../../apis/utils/instanceOfBus";
 
 const Test = () => {
   /**
@@ -39,7 +39,7 @@ const Test = () => {
 
   const fetchBusStation = async (coordinate: { x: number; y: number }) => {
     try {
-      const res = await businstance.get(
+      const res = await bus.get(
         `/getBusStationAroundList?serviceKey=${process.env.REACT_APP_BUS_API_KEY}&x=${coordinate.y}&y=${coordinate.x}`
       );
       if (res.data.status !== "success") {
@@ -151,7 +151,7 @@ const Test = () => {
 
   const fetchBusStationRoute = async (id: number) => {
     try {
-      const res = await businstance.get(
+      const res = await bus.get(
         `getBusStationViaRouteList?serviceKey=${process.env.REACT_APP_BUS_API_KEY}&stationId=${id}`
       );
 
@@ -160,7 +160,6 @@ const Test = () => {
       console.error(e);
     }
   };
-  console.log(routeData);
 
   return (
     <div>
@@ -175,7 +174,6 @@ const Test = () => {
       </button>
       {Object.entries(busStationId).map(([key, value], i) => {
         const stationRoutes = routeData[value.stationId];
-        console.log(stationRoutes);
 
         return (
           <ul style={{ marginBottom: "1rem" }} key={i}>

@@ -128,7 +128,7 @@ const LineWrapper = styled.div`
     margin-right: 0.3rem;
   }
 `;
-const Dotted = styled.span`
+export const Dotted = styled.span`
   width: 1rem;
   height: 1rem;
   border-radius: 100%;

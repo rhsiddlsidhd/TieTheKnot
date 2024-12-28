@@ -17,7 +17,7 @@ const Test = () => {
   >(new Map());
   const [selectedStation, setSelectedStation] = useState<string>("");
   const [selectedLineColor, setSelectedLineColor] = useState<string[]>([]);
-  console.log(selectedLineColor);
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await getAllSubwayStationApi();

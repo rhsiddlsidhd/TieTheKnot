@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useDaumPostcodePopup } from "react-daum-postcode";
 import { Map, MapMarker, MarkerClusterer } from "react-kakao-maps-sdk";
 import styled from "styled-components";
-
-import axiosinstance from "../../axios/interceptors/interceptors";
+import kakaoMap from "../../apis/utils/instanceOfKakao";
 
 interface GeoProps {
   lng: null | number;
@@ -22,7 +21,6 @@ const Test = () => {
   );
 
   const handleComplete = (data: any) => {
-    console.log("data", data);
     let fullAddress = data.address;
     let extraAddress = "";
 
@@ -45,15 +43,12 @@ const Test = () => {
 
   const getCoordinatesFromAddress = async (address: string) => {
     try {
-      console.log("address", address);
       if (address === "") {
         throw new Error("address value : null");
       }
       let addressQuery = address;
 
-      const res = await axiosinstance.get(
-        `/search/address?query=${addressQuery}`
-      );
+      const res = await kakaoMap.get(`/search/address?query=${addressQuery}`);
 
       if (res.status !== 200) {
         throw new Error("좌표받아오기 응답 실패");

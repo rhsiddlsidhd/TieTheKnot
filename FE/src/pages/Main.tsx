@@ -18,6 +18,9 @@ import CalenderSections from "../components/calenders/CalenderSections";
 
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
+import { useState } from "react";
+import { GeoProps } from "../apis/api/location/kakaoMap/types";
+import NaviSections from "../components/locations/NaviSections";
 
 export interface WeddingDay {
   year: number;
@@ -27,6 +30,14 @@ export interface WeddingDay {
 }
 
 const Main = () => {
+  const [currentGeoState, setCurrentGeoState] = useState<GeoProps>({
+    lng: null,
+    lat: null,
+  });
+  const [geoState, setGeoState] = useState<GeoProps>({
+    lng: null,
+    lat: null,
+  });
   const newDate = new Date(weddingDate);
 
   const weddingDay = {
@@ -207,9 +218,15 @@ const Main = () => {
             <div>{weddingAddress}</div>
             <div>{weddingTell}</div>
           </section>
-          <MapSections />
+          <MapSections
+            currentGeoState={currentGeoState}
+            geoState={geoState}
+            setCurrentGeoState={setCurrentGeoState}
+            setGeoState={setGeoState}
+          />
+          <NaviSections currentGeoState={currentGeoState} geoState={geoState} />
           <SubwaySections />
-          <BusSections />
+          <BusSections geoState={geoState} />
         </WeddingInvitationContainer>
       </Layout>
     </div>
