@@ -98,27 +98,20 @@ export const SectionWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
   padding-bottom: 1rem;
-  border-top: 1px solid #eeeeee;
 `;
 
 const SubwayTextWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: start;
-
   & > div:first-child {
     display: flex;
     flex-direction: column;
     align-items: start;
-    margin-bottom: 0.5rem;
   }
 `;
 
-const ExitInfoText = styled.p`
-  margin-top: 0.5rem;
-`;
+const ExitInfoText = styled.p``;
 
 const LineWrapper = styled.div`
   display: flex;

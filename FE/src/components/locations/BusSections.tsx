@@ -129,13 +129,12 @@ const BusSections = ({ geoState }: BusSectionsProps) => {
                 {key} 정류장 하차 (정류장 번호 :{" "}
                 {value.stationNumber.join(", ")})
               </p>
-              <div>
+              <BusNumberWrapper>
                 {buses ? (
                   buses.map((bus, i) => {
                     const color = mapRouteTypeToColor(Number(bus.routeTypeCd));
                     return (
                       <BusList key={i}>
-                        {/* <Dotted style={{ backgroundColor: "" }} /> */}
                         <BusImg
                           src={`${process.env.REACT_APP_IMAGE_BASE_URL}/bus.svg`}
                           alt="이미지"
@@ -150,7 +149,7 @@ const BusSections = ({ geoState }: BusSectionsProps) => {
                 ) : (
                   <p>운행하는 버스가 없습니다.</p>
                 )}
-              </div>
+              </BusNumberWrapper>
             </Container>
           );
         })}
@@ -168,9 +167,14 @@ const BusList = styled.p`
   justify-content: center;
 `;
 
+const BusNumberWrapper = styled.div`
+  margin-bottom: 1rem;
+`;
+
 const Container = styled.div`
   & > div {
     display: flex;
+    flex-wrap: wrap;
   }
 `;
 
