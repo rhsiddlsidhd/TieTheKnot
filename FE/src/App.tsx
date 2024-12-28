@@ -1,10 +1,30 @@
-import styled from "styled-components";
-import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router";
+import Main from "./pages/Main";
 
-import { useEffect, useState } from "react";
+import Register from "./pages/Register";
+import Test from "./tests/bus/Test";
+import Navitest from "./tests/location/Navitest";
+
+type Item = {
+  quantity: number;
+  gridArea: string;
+};
+
+export type TypeOfSelected = {
+  [id: string]: Item | undefined;
+};
 
 function App() {
-  return <div className="App"></div>;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/test" element={<Test />} />
+        <Route path="/navitest" element={<Navitest />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

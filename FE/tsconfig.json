@@ -5,7 +5,8 @@
     "strict": true,
     "allowJs": true,
     "esModuleInterop": true, //default로 내보낸 값이 없어도 import 할 수 있도록 컴파일 도와주는 옵션
-    "jsx": "react-jsx" //ts 컴파일러는 jsx 문법을 해석할 수 있도록 옵션 on
+    "jsx": "react-jsx", //ts 컴파일러는 jsx 문법을 해석할 수 있도록 옵션 on
+    "types": ["kakao.maps.d.ts"]
   },
   "include": ["src/**/*"]
 }

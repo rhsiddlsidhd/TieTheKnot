@@ -1,48 +1,81 @@
-import React, { useState } from "react";
 import styled from "styled-components";
 import { media } from "../styles/media";
 import "../App.css";
-type CurrentDate = {
+import { weddingDate } from "../tests/calendar/data";
+
+import {
+  weddingAddress,
+  weddingAddressDetail,
+  weddingTell,
+} from "../tests/daum/data";
+import MapSections from "../components/locations/MapSections";
+import Subway from "../components/locations/SubwaySections";
+
+import { convertToAMPM } from "../utils/dateUtils";
+import Calender from "../components/calenders/CalenderSections";
+import CountdownSections from "../components/calenders/CountdownSections";
+import CalenderSections from "../components/calenders/CalenderSections";
+
+import SubwaySections from "../components/locations/SubwaySections";
+import BusSections from "../components/locations/BusSections";
+import { useState } from "react";
+import { GeoProps } from "../apis/api/location/kakaoMap/types";
+import NaviSections from "../components/locations/NaviSections";
+
+export interface WeddingDay {
   year: number;
   month: number;
   date: number;
   day: number;
-};
-
-type CurrentTime = {
-  hour: number | null;
-  minutes: number | null;
-  seconds: number | null;
-};
+}
 
 const Main = () => {
-  const today = new Date();
-
-  const [currentDate] = useState<CurrentDate>({
-    year: today.getFullYear(),
-    month: today.getMonth() + 1,
-    date: today.getDate(),
-    day: today.getDay(),
+  const [currentGeoState, setCurrentGeoState] = useState<GeoProps>({
+    lng: null,
+    lat: null,
   });
+  const [geoState, setGeoState] = useState<GeoProps>({
+    lng: null,
+    lat: null,
+  });
+  const newDate = new Date(weddingDate);
 
-  const { year, month, date, day } = currentDate;
-
-  const handleWeekdays = (day: number) => {
-    let dayCopy = day;
-    const weekdays = [
-      "일요일",
-      "월요일",
-      "화요일",
-      "수요일",
-      "목요일",
-      "금요일",
-      "토요일",
-      "일요일",
-    ];
-    return weekdays[dayCopy];
+  const weddingDay = {
+    year: newDate.getFullYear(),
+    month: newDate.getMonth() + 1,
+    date: newDate.getDate(),
+    day: newDate.getDay(),
   };
 
-  const weekdaysText = handleWeekdays(day);
+  const weddingTime = {
+    hours: newDate.getHours(),
+    minutes: newDate.getMinutes(),
+  };
+
+  const { year, month, date, day } = weddingDay;
+  const { hours, minutes } = weddingTime;
+
+  const weekdaysOfKr = [
+    "일요일",
+    "월요일",
+    "화요일",
+    "수요일",
+    "목요일",
+    "금요일",
+    "토요일",
+  ];
+
+  const weekdaysOfEng = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  let time = convertToAMPM(hours, minutes);
 
   return (
     <div className="App">
@@ -53,7 +86,7 @@ const Main = () => {
             <div>
               {year}/{month}/{date}
             </div>
-            <div>{weekdaysText}</div>
+            <div>{weekdaysOfEng[day]}</div>
           </SectionHeader>
           <ImgWrapper $thumnail>
             <img
@@ -150,7 +183,6 @@ const Main = () => {
             <h3>우리의 순간</h3>
           </SectionHeader>
           <GalleryWrapper>
-            {}
             <img
               className="items item1"
               src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
@@ -167,6 +199,34 @@ const Main = () => {
               alt="이미지"
             />
           </GalleryWrapper>
+          <CalendarWrapper>
+            <h1>{`${year}.${month}.${date}`}</h1>
+            <h3
+              style={{ fontWeight: "100" }}
+            >{`${weekdaysOfKr[day]} ${time}`}</h3>
+            <Calender weddingDay={weddingDay} weekdaysOfKr={weekdaysOfKr} />
+            <CountdownSections />
+          </CalendarWrapper>
+        </WeddingInvitationContainer>
+        <WeddingInvitationContainer>
+          <SectionHeader>
+            <p>Location</p>
+            <h3>오시는 길</h3>
+          </SectionHeader>
+          <section>
+            <div>{weddingAddressDetail}</div>
+            <div>{weddingAddress}</div>
+            <div>{weddingTell}</div>
+          </section>
+          <MapSections
+            currentGeoState={currentGeoState}
+            geoState={geoState}
+            setCurrentGeoState={setCurrentGeoState}
+            setGeoState={setGeoState}
+          />
+          <NaviSections currentGeoState={currentGeoState} geoState={geoState} />
+          <SubwaySections />
+          <BusSections geoState={geoState} />
         </WeddingInvitationContainer>
       </Layout>
     </div>
@@ -174,12 +234,20 @@ const Main = () => {
 };
 
 export default Main;
+const CalendarWrapper = styled.div`
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3rem;
+`;
+
+const LocationWrapper = styled.div``;
 
 const GalleryWrapper = styled.div`
   display: grid;
   width: 90%;
-  /* grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 8rem; */
+
   grid-gap: 1rem;
   padding: 1rem;
   grid-template-areas:
@@ -218,13 +286,12 @@ const Layout = styled.div`
     `} */
 `;
 
-const WeddingInvitationContainer = styled.div`
+export const WeddingInvitationContainer = styled.div`
   padding-top: 5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  padding-bottom: 2rem; //임의
   > .mb-3 {
     margin-bottom: 3rem;
   }
@@ -239,7 +306,7 @@ const MusicIconBox = styled.div`
   justify-content: end;
 `;
 
-const SectionHeader = styled.section<{ $isfirstsection?: boolean }>`
+export const SectionHeader = styled.section<{ $isfirstsection?: boolean }>`
   color: ${(props) => (props.$isfirstsection ? "black" : "pink")};
   margin-bottom: ${(props) => (props.$isfirstsection ? "0" : "3rem")};
   width: 100%;
@@ -288,7 +355,7 @@ const ContentWrapper = styled.div`
   }
 `;
 
-const BtnWrapper = styled.div`
+export const BtnWrapper = styled.div<{ nav?: boolean }>`
   width: 80%;
   & > button {
     width: 100%;
@@ -296,6 +363,11 @@ const BtnWrapper = styled.div`
     border-radius: 0.5rem;
     border: 2px solid #f0f0f0;
     background-color: white;
+    font-family: "Cute Font", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.5rem 0;
   }
   & > button:hover {
     cursor: pointer;
