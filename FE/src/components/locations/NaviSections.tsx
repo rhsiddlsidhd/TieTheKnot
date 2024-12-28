@@ -60,9 +60,10 @@ const NaviSections = ({ currentGeoState, geoState }: NaviSectionsProps) => {
 export default NaviSections;
 
 export const NaviWrapper = styled.div`
-  margin-top: 1rem;
   width: 100%;
 
+  & > h4 {
+  }
   & > h4,
   p {
     display: flex;

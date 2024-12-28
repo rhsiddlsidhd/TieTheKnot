@@ -21,6 +21,7 @@ import BusSections from "../components/locations/BusSections";
 import { useState } from "react";
 import { GeoProps } from "../apis/api/location/kakaoMap/types";
 import NaviSections from "../components/locations/NaviSections";
+import PrivateCarSections from "../components/locations/PrivateCarSections";
 
 export interface WeddingDay {
   year: number;
@@ -227,6 +228,13 @@ const Main = () => {
           <NaviSections currentGeoState={currentGeoState} geoState={geoState} />
           <SubwaySections />
           <BusSections geoState={geoState} />
+          <PrivateCarSections />
+        </WeddingInvitationContainer>
+        <WeddingInvitationContainer>
+          <SectionHeader>
+            <p>GusetBook</p>
+            <h3>방명록 </h3>
+          </SectionHeader>
         </WeddingInvitationContainer>
       </Layout>
     </div>
@@ -241,8 +249,6 @@ const CalendarWrapper = styled.div`
   align-items: center;
   margin-top: 3rem;
 `;
-
-const LocationWrapper = styled.div``;
 
 const GalleryWrapper = styled.div`
   display: grid;

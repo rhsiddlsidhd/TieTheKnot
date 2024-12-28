@@ -83,7 +83,6 @@ const MapSections = ({
           <button>약도 이미지 보기</button>
         </BtnWrapper>
       </MapSection>
-      <NaviSections currentGeoState={currentGeoState} geoState={geoState} />
     </>
   );
 };
@@ -95,6 +94,6 @@ const MapSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* border-bottom: 1px solid #eeeeee; */
+
   padding-bottom: 1rem;
 `;
