@@ -3,8 +3,7 @@
     "module": "CommonJS",
     "target": "ES6",
     "strict": true,
-    "esModuleInterop": true //default로 내보낸 값이 없어도 import 할 수 있도록 컴파일 도와주는 옵션
+    "esModuleInterop": true
   },
-
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "types/**/*"]
 }
