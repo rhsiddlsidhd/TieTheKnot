@@ -1,9 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import Main from "./pages/Main";
-
 import Register from "./pages/Register";
-import Test from "./tests/bus/Test";
-import Navitest from "./tests/location/Navitest";
+import Test from "./tests/googleLogin/Test";
 
 type Item = {
   quantity: number;
@@ -20,7 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/navitest" element={<Navitest />} />
+        <Route path="/navitest" element={<Test />} />
         <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
