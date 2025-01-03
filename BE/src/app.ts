@@ -1,3 +1,4 @@
+
 import { Request, Response } from "express";
 import { Store } from "express-session";
 import { load } from "ts-dotenv";
@@ -13,6 +14,7 @@ const corsOptions = {
 };
 
 const app = express();
+
 const env = load({
   MONGODB_URL: String,
   PORT: Number,
@@ -37,9 +39,11 @@ app.listen(env.PORT, () => {
   console.log(`server open >>>>>>>> ${env.PORT}`);
 });
 
+
 const main = async () => {
   await mongoose.connect(`${env.MONGODB_URL}`);
 };
+
 main().catch((error: unknown) => console.log(error));
 /**
  * OAuth2.0 페이지에 들어와 로그인 이후에
@@ -47,3 +51,4 @@ main().catch((error: unknown) => console.log(error));
  * Client = session state를 보고 로그인 유저 확인
  * 로그인 유저는 등록페이지와 내정보보기 페이지 접근 가능
  */
+
