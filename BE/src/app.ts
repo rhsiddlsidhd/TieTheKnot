@@ -1,9 +1,7 @@
-import { Request, Response } from "express";
-import { Store } from "express-session";
 import { load } from "ts-dotenv";
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { MongoClient } = require("mongodb");
+
 const express = require("express");
 const session = require("express-session");
 const indexRouter = require("./routers/router");
