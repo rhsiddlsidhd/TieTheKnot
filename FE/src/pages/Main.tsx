@@ -18,10 +18,11 @@ import CalenderSections from "../components/calenders/CalenderSections";
 
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GeoProps } from "../apis/api/location/kakaoMap/types";
 import NaviSections from "../components/locations/NaviSections";
 import PrivateCarSections from "../components/locations/PrivateCarSections";
+import axios from "axios";
 
 export interface WeddingDay {
   year: number;
