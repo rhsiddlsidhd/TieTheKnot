@@ -29,7 +29,7 @@ class OAuthService {
       }
 
       const { tokens } = await oauth2Client.getToken(code);
-      console.log(tokens);
+
       oauth2Client.setCredentials(tokens);
 
       const response = await oauth2Client.request({
