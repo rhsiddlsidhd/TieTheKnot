@@ -1,4 +1,4 @@
-import { model, Schema, Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface User {
   _id: Types.ObjectId;
@@ -13,6 +13,6 @@ const userSehema = new Schema<User>({
   isCompleted: { type: Boolean, required: true },
 });
 
-const User = model<User>("User", userSehema);
+const User = mongoose.model<User>("User", userSehema);
 
 export default User;
