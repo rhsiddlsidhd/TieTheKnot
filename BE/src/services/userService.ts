@@ -1,4 +1,4 @@
-import { CustomError } from "../controller/userController";
+import { CustomError } from "../controller/oauthController";
 import UserModel from "../models/userSchema";
 
 class UserService {
@@ -24,12 +24,18 @@ class UserService {
 
   async createEmail(
     email: string,
-    googleId: string
+    googleId: string,
+    refresh: string
   ): Promise<UserModel | null> {
     try {
       const isGoogleId = await this.isGoogleId(googleId);
       if (!isGoogleId) {
-        const newUser = new UserModel({ email, isCompleted: false, googleId });
+        const newUser = new UserModel({
+          email,
+          googleId,
+          refresh,
+          isCompleted: false,
+        });
         return await newUser.save();
       }
       return null;
