@@ -9,7 +9,9 @@ import { oauthService } from "../services/oauthService";
  * 유효성 검사 
  * 1. 유효한 경우 > next()
  * 2. 만료된 경우 >  DB user 테이블 refeshtoken 를 가져와서 갱신
+ * 만료된 accesstoken으로 user를 특정할 수 없음
  * 
+ * OAuth2client에 이미 token이 저장되어 내장 메서드로 갱신 가능하여 우회
  *  oauth2Client.on('tokens', (tokens) => {
  if (tokens.refresh_token) {
     // store the refresh_token in your secure persistent database

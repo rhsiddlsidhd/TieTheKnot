@@ -36,6 +36,7 @@ class OAuthController {
       }
 
       const tokens = await oauthService.handleOAuthCallback(q.code, res);
+      console.log(tokens);
       const infoData = await oauthService.fetchUserInfo();
 
       if (!tokens.refresh_token) {
