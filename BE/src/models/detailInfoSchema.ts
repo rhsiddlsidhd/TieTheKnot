@@ -34,7 +34,7 @@ const detailInfoSchema = new Schema<DetailInfoInfo>({
 });
 
 const DetailInfo = mongoose.model<DetailInfoInfo>(
-  "DetailInfo",
+  "user-detail-information",
   detailInfoSchema
 );
 

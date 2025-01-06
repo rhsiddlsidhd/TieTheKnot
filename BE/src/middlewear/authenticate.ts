@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { oauth2Client } from "../config/oauthConfig";
 import { CustomError } from "../controller/oauthController";
 import { oauthService } from "../services/oauthService";
 
@@ -29,16 +28,15 @@ export const authenticate = async (
 ) => {
   try {
     if (!req.cookies.__knot_jwt) {
-      throw new CustomError(400, "Bad request");
+      throw new CustomError(400, "JWT not found");
     }
 
     const jwt = req.cookies.__knot_jwt.split(" ")[1];
-
     const tokenVarify = await oauthService.accessTokenVerify(jwt);
+
     if (tokenVarify) {
       next();
     } else {
-      //재발급
       await oauthService.refreshAccessToken(res);
       next();
     }

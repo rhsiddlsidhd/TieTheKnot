@@ -1,5 +1,4 @@
 import { authenticate } from "../middlewear/authenticate";
-
 const express = require("express");
 const router = express.Router();
 const authApi = require("../routers/auth.api");

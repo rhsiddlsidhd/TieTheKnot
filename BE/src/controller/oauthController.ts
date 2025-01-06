@@ -25,35 +25,18 @@ class OAuthController {
      * 에러처리 고민해볼것,,
      */
     try {
-      let q = url.parse(req.url, true).query;
-      let session = req.session;
-      if (q.error) {
-        throw new CustomError(400, q.error);
-      }
+      const tokens = await oauthService.handleOAuthCallback(req, res);
+      const { access_token } = tokens;
 
-      if (q.state !== session.state) {
-        throw new CustomError(403, "State mismatch. Possible CSRF attack.");
-      }
+      const infoData = await oauthService.fetchUser();
+      const { email, sub: googleId } = infoData;
 
-      const tokens = await oauthService.handleOAuthCallback(q.code, res);
-      console.log(tokens);
-      const infoData = await oauthService.fetchUserInfo();
+      await userService.saveUser(email, googleId);
 
-      if (!tokens.refresh_token) {
-        throw new Error("Invalid or Missing refresh token");
-      }
+      const user = await userService.findUserByGoogleId(googleId);
+      await userService.saveDetailInfo(user);
 
-      await userService.createEmail(
-        infoData.email,
-        infoData.sub,
-        tokens.refresh_token
-      );
-
-      if (!tokens.access_token) {
-        throw new Error("Invalid or Missing access token");
-      }
-
-      await oauthService.setAccessTokenToCookie(tokens.access_token, res);
+      await oauthService.setAccessTokenToCookie(access_token, res);
 
       res.redirect("http://localhost:3000/");
     } catch (error: unknown) {
@@ -74,6 +57,10 @@ class OAuthController {
       if (error instanceof CustomError) {
         res.status(error.status).json({
           name: error.name,
+          message: error.message,
+        });
+      } else if (error instanceof Error) {
+        res.json({
           message: error.message,
         });
       } else {

@@ -1,8 +1,11 @@
 import { CustomError } from "../controller/oauthController";
 import { Request, Response } from "express";
 import crypto from "crypto";
-import { oauth2Client } from "../config/oauthConfig";
+import { google } from "googleapis";
+import { load } from "ts-dotenv";
 import fetch from "node-fetch";
+import { OAuth2Client } from "google-auth-library";
+var url = require("url");
 /**
  * google Social Login
  * OAuth2.0 라이브러리 사용
@@ -27,12 +30,27 @@ interface UserInfo {
   [key: string]: any;
 }
 
+const env = load({
+  GOOGLE_CLIENT_ID: String,
+  GOOGLE_CLIENT_PASSWORD: String,
+  GOOGLE_REDIRECT_URI: String,
+});
+
 class OAuthService {
+  private oauth2Client: OAuth2Client;
+  constructor() {
+    this.oauth2Client = new google.auth.OAuth2(
+      env.GOOGLE_CLIENT_ID,
+      env.GOOGLE_CLIENT_PASSWORD,
+      env.GOOGLE_REDIRECT_URI
+    );
+  }
+
   createOAuthUrl = (req: Request): string => {
     const scopes = ["https://www.googleapis.com/auth/userinfo.email"];
     const state = crypto.randomBytes(32).toString("hex");
     req.session.state = state;
-    return oauth2Client.generateAuthUrl({
+    return this.oauth2Client.generateAuthUrl({
       access_type: "offline",
       scope: scopes,
       include_granted_scopes: true,
@@ -41,14 +59,29 @@ class OAuthService {
     });
   };
 
-  handleOAuthCallback = async (code: string | null, res: Response) => {
+  handleOAuthCallback = async (req: Request, res: Response) => {
     try {
+      if (!req.url) {
+        throw new Error(`url is ${typeof req.url}`);
+      }
+      let q = url.parse(req.url, true).query;
+
+      const { error, state, code } = q;
+      let session = req.session;
+      if (error) {
+        throw new CustomError(400, q.error);
+      }
+
+      if (state !== session.state) {
+        throw new CustomError(403, "State mismatch. Possible CSRF attack.");
+      }
+
       if (!code) {
         throw new CustomError(400, "Code not found.");
       }
 
-      const { tokens } = await oauth2Client.getToken(code);
-      oauth2Client.setCredentials(tokens);
+      const { tokens } = await this.oauth2Client.getToken(code);
+      this.oauth2Client.setCredentials(tokens);
 
       return tokens;
     } catch (error) {
@@ -56,9 +89,9 @@ class OAuthService {
     }
   };
 
-  fetchUserInfo = async (): Promise<UserInfo> => {
+  fetchUser = async (): Promise<UserInfo> => {
     try {
-      const response = await oauth2Client.request({
+      const response = await this.oauth2Client.request({
         url: "https://www.googleapis.com/oauth2/v3/userinfo",
       });
 
@@ -73,9 +106,13 @@ class OAuthService {
   };
 
   setAccessTokenToCookie = async (
-    accessToken: string,
+    accessToken: string | undefined | null,
     res: Response
   ): Promise<void> => {
+    if (!accessToken) {
+      throw new Error("Invalid or Missing access token");
+    }
+
     if (accessToken) {
       res.cookie("__knot_jwt", `bearer ${accessToken}`, {
         path: "/",
@@ -88,11 +125,23 @@ class OAuthService {
 
   accessTokenVerify = async (jwt: string) => {
     try {
+      /**
+       * 문제점
+       * 토큰은 유효하지만 특정 유저 access토큰 인지는 검증하지 않음
+       */
+      if (!jwt) {
+        throw new CustomError(400, `JWT is ${typeof jwt}`);
+      }
+      const clientAccess = this.oauth2Client.credentials.access_token;
+      //JWT 랑 clinet acctoken이 동일한지 체크해야함 < 불편해서 잠깐 주석>
+      // if (jwt !== clientAccess) {
+      //   throw new CustomError(401, "Invalid jwt");
+      // }
+
       const url = `https://oauth2.googleapis.com/tokeninfo?access_token=${jwt}`;
       const response = await fetch(url);
 
       if (response.status === 401) {
-        //만료된토큰
         return false;
       } else if (response.status !== 200) {
         throw new CustomError(response.status, response.statusText);
@@ -104,8 +153,8 @@ class OAuthService {
     }
   };
 
-  refreshAccessToken = async (res: Response): Promise<boolean> => {
-    oauth2Client.on("tokens", (tokens) => {
+  refreshAccessToken = async (res: Response): Promise<void> => {
+    this.oauth2Client.on("tokens", (tokens) => {
       res.cookie("__knot_jwt", `bearer ${tokens.access_token}`, {
         path: "/",
         maxAge: 3600000,
@@ -113,7 +162,6 @@ class OAuthService {
         secure: process.env.NODE_ENV === "production",
       });
     });
-    return true;
   };
 }
 
