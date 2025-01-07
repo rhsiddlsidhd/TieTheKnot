@@ -1,4 +1,7 @@
+import { NextFunction, Request, Response } from "express";
 import { load } from "ts-dotenv";
+const multer = require("multer");
+const upload = multer({ dest: "upload/" });
 const cookieparser = require("cookie-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -30,7 +33,7 @@ app.use(
     },
   })
 );
-
+app.use(upload.array("photos", 12));
 app.use(express.json());
 app.use("/", indexRouter);
 

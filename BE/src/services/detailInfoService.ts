@@ -5,7 +5,7 @@ import { CustomError } from "../controller/oauthController";
 interface DetailInfoPayload {
   weddingAddress: string;
   weddingDate: string;
-  isAccount: boolean;
+  isAccount: Types.ObjectId | null;
   parents: boolean;
 }
 

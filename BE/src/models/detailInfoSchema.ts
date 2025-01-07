@@ -5,7 +5,7 @@ interface DetailInfoInfo {
   user: Types.ObjectId;
   weddingAddress: string;
   weddingDate: string;
-  isAccount: boolean;
+  isAccount: Types.ObjectId | null;
   parents: boolean;
 }
 
@@ -24,8 +24,9 @@ const detailInfoSchema = new Schema<DetailInfoInfo>({
     require: true,
   },
   isAccount: {
-    type: Boolean,
-    require: true,
+    type: mongoose.Types.ObjectId,
+    ref: "Account",
+    default: null,
   },
   parents: {
     type: Boolean,

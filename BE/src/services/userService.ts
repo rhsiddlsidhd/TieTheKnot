@@ -80,7 +80,7 @@ class UserService {
           user: user._id,
           weddingAddress: null,
           weddingDate: null,
-          isAccount: false,
+          isAccount: null,
           parents: false,
         });
         await detailInfo.save();
