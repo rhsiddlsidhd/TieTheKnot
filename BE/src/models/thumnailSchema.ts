@@ -15,6 +15,12 @@ const thumnailSchema = new Schema({
   url: {
     type: [String],
     require: true,
+    validate: {
+      validator: (urls: string[]): boolean => {
+        return urls.length === 2;
+      },
+      message: `썸네일은 두개의 이미지를 필요로 합니다.`,
+    },
   },
 });
 

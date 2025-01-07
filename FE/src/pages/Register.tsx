@@ -1,28 +1,32 @@
 import axios from "axios";
 import { useEffect } from "react";
 import styled from "styled-components";
+import { Navigate, useNavigate } from "react-router";
+import axios from "axios";
 
 const Register = () => {
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get("http://localhost:8080/auth/token");
-        const token = res.data.accessToken;
-        setAccessTokenToStorage(token);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchUser();
-  }, []);
+  const handleGoogleAuth = async () => {
+    window.location.href = "http://localhost:8080/auth";
+  };
 
-  const setAccessTokenToStorage = (token: string): void => {
-    console.log(token);
+  const handleLogin = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8080/auth/authenticate`, {
+        withCredentials: true,
+      });
+
+      console.log(res.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <div>
-      <button style={{ padding: "1rem" }}>plus</button>
+    <>
+      <button onClick={handleGoogleAuth} style={{ padding: "1rem" }}>
+        google
+      </button>
+      <button onClick={handleLogin}>login</button>
       <Drop>등록</Drop>
     </div>
   );

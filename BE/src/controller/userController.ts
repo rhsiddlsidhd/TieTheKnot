@@ -1,67 +1,69 @@
 import { Request, Response } from "express";
-import { userService } from "../services/userService";
 import { oauthService } from "../services/oauthService";
+import { userService } from "../services/userService";
+import { detailInfoService } from "../services/detailInfoService";
+import { CustomError } from "./oauthController";
 
-interface CustomErrorInterface {
-  status: number;
-}
-
-export class CustomError extends Error implements CustomErrorInterface {
-  constructor(public status: number, message: string) {
-    super(message);
-  }
-}
-
-class OAuthController {
-  getGoogleOAuth = (req: Request, res: Response): void => {
-    const authorizationUrl = oauthService.createOAuthUrl(req);
-    res.redirect(authorizationUrl);
-  };
-
-  googleOAuthCallback = async (req: Request, res: Response): Promise<void> => {
+class UserController {
+  putDetailInfo = async (req: Request, res: Response): Promise<void> => {
     try {
-      let urlObj = new URL(req.url, `http://${req.headers.host}`);
-      let q = urlObj.searchParams;
-      const error = q.get("error");
-      const state = q.get("state");
+      /**
+       * body json으로~
+       */
+      const paylod = req.body;
+      const infoData = await oauthService.fetchUser();
+      const { sub: googleId } = infoData;
+      const user = await userService.findUserByGoogleId(googleId);
 
-      if (error !== null) {
-        throw new CustomError(400, error);
-      }
-      if (state !== req.session.state) {
-        throw new CustomError(403, "State mismatch. Possible CSRF attack.");
-      }
+      const data = await detailInfoService.updateUserInfo(user._id, paylod);
 
-      const infoData = await oauthService.handleOAuthCallback(q.get("code"));
-
-      await userService.createEmail(infoData.email, infoData.sub);
-      res.redirect("http://localhost:3000/");
-    } catch (error: unknown) {
-      const authorizationUrl = oauthService.createOAuthUrl(req);
-      res.redirect(authorizationUrl);
-    }
-  };
-
-  getAccessToken = (req: Request, res: Response): void => {
-    try {
-      const accessToken = oauthService.accessTokenService();
       res.status(200).json({
-        authenticated: true,
-        accessToken,
+        message: `USER_DETAIL_INFO_UPDATE_SUCCESS`,
+        data,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       if (error instanceof CustomError) {
         res.status(error.status).json({
           name: error.name,
           message: error.message,
         });
-      } else {
-        res.status(500).json({
-          message: "Server Error",
+      } else if (error instanceof Error) {
+        res.json({
+          message: error.message,
         });
+      } else {
+        console.error(error);
+      }
+    }
+  };
+
+  getDetailInfo = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const infoData = await oauthService.fetchUser();
+      const { sub: googleId } = infoData;
+      const user = await userService.findUserByGoogleId(googleId);
+
+      //내 상세정보 보기 모두 가져오기
+      const data = await detailInfoService.findDetailInfoByUserId(user._id);
+
+      res.status(200).json({
+        message: `USER_DETAIL_INFO_GET_SUCCESS`,
+        data,
+      });
+    } catch (error) {
+      if (error instanceof CustomError) {
+        res.status(error.status).json({
+          name: error.name,
+          message: error.message,
+        });
+      } else if (error instanceof Error) {
+        res.json({
+          message: error.message,
+        });
+      } else {
+        console.error(error);
       }
     }
   };
 }
-
-export const oauthController = new OAuthController();
+export const userController = new UserController();

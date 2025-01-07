@@ -1,29 +1,41 @@
 import mongoose, { Schema, Types } from "mongoose";
+
 interface ParentsSchema {
   _id: Types.ObjectId;
-  detailInfo: Types.ObjectId;
-  parentType: string;
-  name: string;
-  isAlive: boolean;
+  names: {
+    father: {
+      type: string;
+    };
+    mother: {
+      type: string;
+    };
+  };
+  isAlive: {
+    father: {
+      type: boolean;
+    };
+    mother: {
+      type: boolean;
+    };
+  };
 }
 
 const parentsSchema = new Schema<ParentsSchema>({
-  detailInfo: {
-    type: mongoose.Schema.ObjectId,
-    required: true,
-    ref: "DetailInfo",
-  },
-  parentType: {
-    type: String,
-    required: true,
-  },
-  name: {
-    type: String,
-    required: true,
+  names: {
+    father: {
+      type: String,
+    },
+    mother: {
+      type: String,
+    },
   },
   isAlive: {
-    type: Boolean,
-    required: true,
+    father: {
+      type: Boolean,
+    },
+    mother: {
+      type: Boolean,
+    },
   },
 });
 

@@ -1,7 +1,10 @@
+import { NextFunction, Request, Response } from "express";
 import { load } from "ts-dotenv";
+const multer = require("multer");
+const upload = multer({ dest: "upload/" });
+const cookieparser = require("cookie-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-
 const express = require("express");
 const session = require("express-session");
 const indexRouter = require("./routers/router");
@@ -16,7 +19,7 @@ const env = load({
   MONGODB_URL: String,
   PORT: Number,
 });
-
+app.use(cookieparser());
 app.use(cors(corsOptions));
 app.use(
   session({
@@ -24,12 +27,14 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: {
-      maxAge: 60000,
+      maxAge: 3600000,
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
     },
   })
 );
+app.use(upload.array("photos", 12));
+app.use(express.json());
 app.use("/", indexRouter);
 
 app.listen(env.PORT, () => {
