@@ -2,11 +2,31 @@ import React, { MouseEventHandler, useContext } from "react";
 import { TypeOfSelected } from "../App";
 import styled from "styled-components";
 import { Navigate, useNavigate } from "react-router";
+import axios from "axios";
 
 const Register = () => {
+  const handleGoogleAuth = async () => {
+    window.location.href = "http://localhost:8080/auth";
+  };
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8080/auth/authenticate`, {
+        withCredentials: true,
+      });
+
+      console.log(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
-      <button style={{ padding: "1rem" }}>plus</button>
+      <button onClick={handleGoogleAuth} style={{ padding: "1rem" }}>
+        google
+      </button>
+      <button onClick={handleLogin}>login</button>
       <Drop>등록</Drop>
     </>
   );
