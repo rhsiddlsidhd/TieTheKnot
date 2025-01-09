@@ -35,6 +35,8 @@ const Tset = () => {
     return n;
   };
 
+  console.log(toggleDropdown);
+
   const handleGalleryType = (id: string, e: React.MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
     const value = target.getAttribute("value");
