@@ -1,46 +1,47 @@
-import axios from "axios";
-import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import styled from "styled-components";
-import { Navigate, useNavigate } from "react-router";
-import axios from "axios";
+import useAuthFailRedirect from "../hooks/useAuthFailRedirect";
 
 const Register = () => {
-  const handleGoogleAuth = async () => {
-    window.location.href = "http://localhost:8080/auth";
-  };
-
-  const handleLogin = async () => {
-    try {
-      const res = await axios.get(`http://localhost:8080/auth/authenticate`, {
-        withCredentials: true,
-      });
-
-      console.log(res.data);
-    } catch (error) {
-      console.error(error);
-    }
+  const isAuth = useAuthFailRedirect();
+  const navigate = useNavigate();
+  const navigateOrderPage = () => {
+    navigate("/order");
   };
 
   return (
-    <>
-      <button onClick={handleGoogleAuth} style={{ padding: "1rem" }}>
-        google
-      </button>
-      <button onClick={handleLogin}>login</button>
-      <Drop>등록</Drop>
-    </div>
+    <Container>
+      <div>{isAuth && <div>LOGINSUCCESS</div>}</div>
+      <PageWrapper>
+        <div onClick={navigateOrderPage}>주문하기</div>
+        <div>내 주문보기</div>
+      </PageWrapper>
+    </Container>
   );
 };
 
 export default Register;
 
-const Drop = styled.div`
-  border: 1px solid black;
-  & > ul > li {
-    border-bottom: 1px solid black;
-    cursor: pointer;
-    &:hover {
-      background-color: gray;
-    }
+const Container = styled.div`
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  & > div:first-child {
+    height: 10vh;
+    display: flex;
+    align-items: center;
+  }
+`;
+
+const PageWrapper = styled.div`
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+  & > div {
+    border: 1px solid black;
+    padding: 5rem;
   }
 `;
