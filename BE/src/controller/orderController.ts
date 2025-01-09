@@ -9,6 +9,7 @@ import { userService } from "../services/userService";
 class OrderController {
   postWeddingOrder = async (req: Request, res: Response) => {
     try {
+      console.log(req.body);
       const {
         weddingAddress,
         weddingDate,
@@ -22,20 +23,19 @@ class OrderController {
       const { sub: googleId } = infoData;
       const user = await userService.findUserByGoogleId(googleId);
 
-      let accountId = null;
-      if (isAccount) {
-        console.log(isAccount);
-        const newAccount = new Account(isAccount);
-        await newAccount.save();
-        accountId = newAccount;
-      }
+      // let accountId = null;
+      // if (isAccount) {
+      //   const newAccount = new Account(isAccount);
+      //   await newAccount.save();
+      //   accountId = newAccount;
+      // }
 
-      let parentsId = null;
-      if (parents) {
-        const newParents = new Parents(parents);
-        await newParents.save();
-        parentsId = newParents;
-      }
+      // let parentsId = null;
+      // if (parents) {
+      //   const newParents = new Parents(parents);
+      //   await newParents.save();
+      //   parentsId = newParents;
+      // }
 
       if (!weddingAddress || !weddingDate) {
         throw new CustomError(400, `weddingAddress, weddingDate is require`);
@@ -45,25 +45,21 @@ class OrderController {
         user: user._id,
         weddingAddress,
         weddingDate,
-        isAccount: accountId,
-        parents: parentsId,
+        isAccount,
+        parents,
         thumnail,
         gallery,
       });
-
+      console.log(newData);
       await newData.save();
 
-      res.json({
+      res.status(200).json({
         message: "success",
       });
     } catch (error) {
       if (error instanceof CustomError) {
         res.status(error.status).json({
           name: error.name,
-          message: error.message,
-        });
-      } else if (error instanceof Error) {
-        res.json({
           message: error.message,
         });
       } else {

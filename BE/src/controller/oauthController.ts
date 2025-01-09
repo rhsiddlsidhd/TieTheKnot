@@ -38,7 +38,7 @@ class OAuthController {
 
       await oauthService.setAccessTokenToCookie(access_token, res);
 
-      res.redirect("http://localhost:3000/");
+      res.redirect("http://localhost:3000/register");
     } catch (error: unknown) {
       console.error(error);
       const authorizationUrl = oauthService.createOAuthUrl(req);
@@ -47,28 +47,7 @@ class OAuthController {
   };
 
   getAuthenticationStatus = async (req: Request, res: Response) => {
-    try {
-      const jwt = req.cookies.__knot_jwt.split(" ")[1];
-
-      await oauthService.accessTokenVerify(jwt);
-
-      res.status(200).json({ authenticate: true });
-    } catch (error) {
-      if (error instanceof CustomError) {
-        res.status(error.status).json({
-          name: error.name,
-          message: error.message,
-        });
-      } else if (error instanceof Error) {
-        res.json({
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          message: error,
-        });
-      }
-    }
+    res.status(200).json({ message: "LOGIN_SUCCESS" });
   };
 }
 

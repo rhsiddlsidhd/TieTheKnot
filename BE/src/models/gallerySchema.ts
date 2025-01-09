@@ -1,25 +1,34 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-interface GallerySchema {
-  _id: Types.ObjectId;
-  user: Types.ObjectId;
-  types: string[];
+interface GalleryItem {
+  type: string;
   urls: string[];
+}
+
+interface GallerySchema {
+  user: Types.ObjectId;
+  gallery: {
+    [key: string]: GalleryItem;
+  };
 }
 
 const gallerySchema = new Schema<GallerySchema>({
   user: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
     ref: "User",
-    require: true,
   },
-  types: {
-    type: [String],
-    require: true,
-  },
-  urls: {
-    type: [String],
-    require: true,
+  gallery: {
+    type: Map,
+    of: new Schema({
+      type: {
+        type: String,
+      },
+      urls: {
+        type: [String],
+      },
+    }),
+    required: true,
   },
 });
 

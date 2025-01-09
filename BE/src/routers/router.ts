@@ -5,10 +5,12 @@ const authApi = require("../routers/auth.api");
 const userApi = require("../routers/user.api");
 const accountApi = require("../routers/account.api");
 const orderApi = require("./order.api");
+const uploadApi = require("../routers/upload.api");
 
 router.use("/auth", authApi);
 router.use("/user", authenticate, userApi);
 router.use("/account", accountApi);
-router.use("/order", orderApi);
+router.use("/order", authenticate, orderApi);
+router.use("/upload", uploadApi);
 
 module.exports = router;

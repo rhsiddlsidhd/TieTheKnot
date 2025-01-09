@@ -47,7 +47,9 @@ export const authenticate = async (
         message: error.message,
       });
     } else {
-      console.error(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 };

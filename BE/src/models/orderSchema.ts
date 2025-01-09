@@ -1,15 +1,20 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-interface Gallery {
-  [key: string]: string[];
+interface GalleryItems {
+  [key: string]: {
+    type: string;
+    urls: string[];
+  };
 }
+
+type Gallery = GalleryItems;
 
 interface OrderSchema {
   user: Types.ObjectId;
   weddingAddress: string;
   weddingDate: string;
-  isAccount: Types.ObjectId | null;
-  parents: Types.ObjectId | null;
+  isAccount: any;
+  parents: any;
   thumnail: string[];
   gallery: Gallery;
 }
@@ -30,13 +35,13 @@ const orderSchema = new Schema<OrderSchema>({
     require: true,
   },
   isAccount: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Account",
+    type: Schema.Types.Mixed,
+
     default: null,
   },
   parents: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Parents",
+    type: Schema.Types.Mixed,
+
     default: null,
   },
   thumnail: {
@@ -51,9 +56,16 @@ const orderSchema = new Schema<OrderSchema>({
     },
   },
   gallery: {
-    type: [Schema.Types.Mixed],
+    type: Map,
+    of: new Schema({
+      type: {
+        type: String,
+      },
+      urls: {
+        type: [String],
+      },
+    }),
     required: true,
-    min: [1, `최소 1가지 이상의 타입 갤러리를 선택하셔야 합니다.`],
   },
 });
 

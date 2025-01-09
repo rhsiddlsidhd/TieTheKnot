@@ -134,9 +134,9 @@ class OAuthService {
       }
       const clientAccess = this.oauth2Client.credentials.access_token;
       //JWT 랑 clinet acctoken이 동일한지 체크해야함 < 불편해서 잠깐 주석>
-      // if (jwt !== clientAccess) {
-      //   throw new CustomError(401, "Invalid jwt");
-      // }
+      if (jwt !== clientAccess) {
+        throw new CustomError(401, "Invalid jwt");
+      }
 
       const url = `https://oauth2.googleapis.com/tokeninfo?access_token=${jwt}`;
       const response = await fetch(url);
