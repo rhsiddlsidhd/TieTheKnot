@@ -1,16 +1,17 @@
-import axios from "axios";
-import React, { useState } from "react";
+import React, { MouseEventHandler, useEffect, useState } from "react";
 import styled from "styled-components";
 import useAuthFailRedirect from "../hooks/useAuthFailRedirect";
 import { postOrderInvite } from "../apis/api/order/postOrderInvite";
 import { postUploadFiles } from "../apis/api/upload/postUploadFiles";
 import { generateRandomId } from "../utils/generateRandomId";
+import { useDaumPostcodePopup } from "react-daum-postcode";
 
 const Order = () => {
   useAuthFailRedirect();
   const galleryType = ["A", "B", "C", "D"];
   const [checkBox, setCheckBox] = useState<string[]>([]);
-  const [testData, setTestData] = useState<Record<string, any>>({
+  const [weddingDate, setWeddingDate] = useState<string[]>([]);
+  const [orderData, setOrderData] = useState<Record<string, any>>({
     weddingAddress: "",
     weddingDate: "",
     isAccount: {
@@ -59,6 +60,33 @@ const Order = () => {
     gallery: {},
   });
 
+  const open = useDaumPostcodePopup(
+    "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+  );
+
+  const handleComplete = (data: any) => {
+    const field = "weddingAddress";
+    let fullAddress = data.address;
+    let extraAddress = "";
+
+    if (data.addressType === "R") {
+      if (data.bname !== "") {
+        extraAddress += data.bname;
+      }
+      if (data.buildingName !== "") {
+        extraAddress +=
+          extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+      }
+      fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
+    }
+    // setAddress(fullAddress);
+    setOrderData((prev) => ({ ...prev, [field]: fullAddress }));
+  };
+
+  const handleDaumPopupOpen = () => {
+    open({ onComplete: handleComplete });
+  };
+
   const handleOrder = async (
     data: Record<string, any>,
     e: React.FormEvent<HTMLFormElement>
@@ -79,7 +107,7 @@ const Order = () => {
   ) => {
     const fields = field.split(".");
     const { checked, value, type } = e.target;
-    setTestData((prev) => {
+    setOrderData((prev) => {
       let newData = { ...prev };
       let temp = newData;
       fields.forEach((field, index) => {
@@ -96,6 +124,7 @@ const Order = () => {
       return newData;
     });
   };
+  console.log(orderData);
 
   // const uploadFile = async (file: File): Promise<string | void> => {
   //   try {
@@ -137,7 +166,7 @@ const Order = () => {
     if (files) {
       const fileUrls = await getFileUrls(files && Array.from(files));
 
-      setTestData((prev) => {
+      setOrderData((prev) => {
         const __prev = { ...prev };
         if (__prev[field].length + 1 > 2) {
           alert("이미지는 최대 2장까지 입력이 가능합니다");
@@ -171,13 +200,13 @@ const Order = () => {
     if (files) {
       const fileUrls = await getFileUrls(files && Array.from(files));
 
-      setTestData((prev) => {
+      setOrderData((prev) => {
         const { type, urls: prevUrls } = prev[field][galleryId];
         const maxLength = createMaxLengthUrls(type);
         const currentLength = 1;
 
         if (maxLength < prevUrls.length + currentLength) {
-          alert(`${type}에 따른 이미지 개수가 초과하였습니다.`);
+          alert(`${type}타입에 따른 이미지 개수가 초과하였습니다.`);
           return prev;
         }
 
@@ -197,7 +226,7 @@ const Order = () => {
   };
 
   const handleReset = (field: string) => {
-    setTestData((prev) => {
+    setOrderData((prev) => {
       const updatedField = [...prev[field]];
       updatedField.pop();
       return {
@@ -213,7 +242,7 @@ const Order = () => {
 
     if (type && gallery) {
       const _id = generateRandomId();
-      setTestData((prev) => {
+      setOrderData((prev) => {
         return {
           ...prev,
           gallery: {
@@ -246,21 +275,58 @@ const Order = () => {
       delete updatedGalleryIds[id];
     });
 
-    setTestData((prevData) => ({
+    setOrderData((prevData) => ({
       ...prevData,
       gallery: updatedGalleryIds,
     }));
   };
 
+  const handleTestDate = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setWeddingDate: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    const { value, type } = e.currentTarget;
+    setWeddingDate((prev) => {
+      if (type === "date" && prev.length < 1) {
+        return [...prev, value];
+      } else if (type === "time" && prev.length === 1) {
+        return [...prev, value];
+      }
+      return prev;
+    });
+  };
+
+  useEffect(() => {
+    if (weddingDate.length === 2) {
+      const field = "weddingDate";
+      setOrderData((prev) => ({ ...prev, [field]: weddingDate.join(" ") }));
+    }
+  }, [weddingDate]);
+
+  const weddingDateReset = () => {
+    setWeddingDate([]);
+  };
+
   return (
-    <form onSubmit={(e) => handleOrder(testData, e)}>
+    <form onSubmit={(e) => handleOrder(orderData, e)}>
       <div>주소</div>
       <input
+        style={{
+          width: `${orderData["weddingAddress"].length}em`,
+          minWidth: "13em",
+        }}
         type="text"
-        onChange={(e) => handleOnchange("weddingAddress", e)}
+        onClick={() => handleDaumPopupOpen()}
+        readOnly
+        value={orderData["weddingAddress"]}
       />
       <div>날짜</div>
-      <input type="text" onChange={(e) => handleOnchange("weddingDate", e)} />
+      <input readOnly type="text" value={weddingDate} />
+      <input type="date" onChange={(e) => handleTestDate(e, setWeddingDate)} />
+      <input type="time" onChange={(e) => handleTestDate(e, setWeddingDate)} />
+      <button type="button" onClick={weddingDateReset}>
+        날짜 초기화
+      </button>
       <div>계좌 이름</div>
       <input
         type="text"
@@ -375,7 +441,7 @@ const Order = () => {
       </button>
       <br />
       <input type="file" onChange={(e) => handleImgUrl("thumnail", e)} />
-      {testData.thumnail.map((v: string, i: number) => {
+      {orderData.thumnail.map((v: string, i: number) => {
         return <div key={i}>{v}</div>;
       })}
       <div>갤러리</div>
@@ -401,15 +467,15 @@ const Order = () => {
       <div style={{ display: "flex" }}>
         <div style={{ marginRight: "1rem" }}>갤러리 선택</div>
         <button
-          onClick={() => handleGalleryDelete(testData["gallery"], checkBox)}
+          onClick={() => handleGalleryDelete(orderData["gallery"], checkBox)}
         >
           DELETE
         </button>
       </div>
       <GalleryContainer>
-        {Object.keys(testData["gallery"]).map(
+        {Object.keys(orderData["gallery"]).map(
           (galleryId: string, i: number) => {
-            const { type, urls } = testData["gallery"][galleryId];
+            const { type, urls } = orderData["gallery"][galleryId];
             return (
               <GalleryWrapper key={i}>
                 <label>

@@ -4,7 +4,7 @@ export const postUploadFiles = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
     formData.append("photos", file);
-    const res = await authInstance.post("/upload", {
+    const res = await authInstance.post("/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
