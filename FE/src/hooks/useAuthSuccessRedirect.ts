@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { NavigateFunction, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { AuthContextAPI } from "../context/AuthContext";
 import { getGoogleOAuth } from "../apis/api/auth/google/getGoogleOAuth";
 import { AuthCuntomError } from "../apis/utils/instanceOfAuth";
