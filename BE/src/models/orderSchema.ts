@@ -1,20 +1,29 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-interface GalleryItems {
+interface Gallery {
   [key: string]: {
     type: string;
     urls: string[];
   };
 }
 
-type Gallery = GalleryItems;
+interface Account {
+  name: string;
+  bankName: string;
+  accountNumber: string;
+}
+
+interface parent {
+  name: string;
+  isAlive: boolean;
+}
 
 interface OrderSchema {
   user: Types.ObjectId;
   weddingAddress: string;
   weddingDate: string;
-  isAccount: any;
-  parents: any;
+  isAccount: Account[];
+  parent: parent[];
   thumnail: string[];
   gallery: Gallery;
 }
@@ -35,34 +44,44 @@ const orderSchema = new Schema<OrderSchema>({
     require: true,
   },
   isAccount: {
-    type: Schema.Types.Mixed,
+    type: [
+      {
+        name: { type: String, required: true },
+        bankName: { type: String, required: true },
+        accountNumber: { type: String, required: true },
+      },
+    ],
     default: null,
   },
-  parents: {
-    type: Schema.Types.Mixed,
+  parent: {
+    type: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        isAlive: {
+          type: Boolean,
+          required: true,
+        },
+      },
+    ],
     default: null,
   },
   thumnail: {
     type: [String],
     required: true,
-    validate: {
-      validator: (urls) => {
-        console.log(urls);
-        return urls.length === 2;
-      },
-      message: `필수 입력입니다. 썸네일 이미지는 총 두장을 필요로 합니다.`,
-    },
   },
   gallery: {
     type: Map,
-    of: new Schema({
+    of: {
       type: {
         type: String,
       },
       urls: {
         type: [String],
       },
-    }),
+    },
     required: true,
   },
 });
