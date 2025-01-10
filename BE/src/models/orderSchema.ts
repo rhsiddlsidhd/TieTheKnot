@@ -36,12 +36,10 @@ const orderSchema = new Schema<OrderSchema>({
   },
   isAccount: {
     type: Schema.Types.Mixed,
-
     default: null,
   },
   parents: {
     type: Schema.Types.Mixed,
-
     default: null,
   },
   thumnail: {
@@ -52,7 +50,7 @@ const orderSchema = new Schema<OrderSchema>({
         console.log(urls);
         return urls.length === 2;
       },
-      message: `썸네일 이미지는 총 두장을 필요로 합니다.`,
+      message: `필수 입력입니다. 썸네일 이미지는 총 두장을 필요로 합니다.`,
     },
   },
   gallery: {
