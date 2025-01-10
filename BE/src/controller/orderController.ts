@@ -5,52 +5,32 @@ import { CustomError } from "./oauthController";
 import OrderModel from "../models/orderSchema";
 import { oauthService } from "../services/oauthService";
 import { userService } from "../services/userService";
+import orderService from "../services/orderService";
 
 class OrderController {
   postWeddingOrder = async (req: Request, res: Response) => {
     try {
-      console.log(req.body);
+      const data = req.body;
+
       const {
         weddingAddress,
         weddingDate,
-        isAccount,
-        parents,
+        account,
+        parent,
         thumnail,
         gallery,
-      } = req.body;
+      } = orderService.orderDataVerify(data);
 
       const infoData = await oauthService.fetchUser();
       const { sub: googleId } = infoData;
       const user = await userService.findUserByGoogleId(googleId);
 
-      if (!weddingAddress) {
-        throw new CustomError(400, `웨딩홀 주소는 필수 입력입니다.`);
-      }
-
-      if (!weddingDate) {
-        throw new CustomError(400, `웨딩 날짜, 시간은 필수 입력입니다.`);
-      }
-
-      if (thumnail.length !== 2) {
-        throw new CustomError(
-          400,
-          `썸네일은 필수 입력입니다. 총 두장을 선택해주세요.`
-        );
-      }
-
-      if (!gallery) {
-        throw new CustomError(
-          400,
-          `갤러리는 필수 입력입니다. 1가지 타입 이상 선택해주세요.`
-        );
-      }
-
       const newData = new OrderModel({
         user: user._id,
         weddingAddress,
         weddingDate,
-        isAccount,
-        parents,
+        account,
+        parent,
         thumnail,
         gallery,
       });

@@ -18,14 +18,15 @@ interface parent {
   isAlive: boolean;
 }
 
-interface OrderSchema {
+export interface OrderSchema {
   user: Types.ObjectId;
   weddingAddress: string;
   weddingDate: string;
-  isAccount: Account[];
+  account: Account[];
   parent: parent[];
   thumnail: string[];
   gallery: Gallery;
+  isCompleted: boolean;
 }
 
 const orderSchema = new Schema<OrderSchema>({
@@ -43,7 +44,7 @@ const orderSchema = new Schema<OrderSchema>({
     type: String,
     require: true,
   },
-  isAccount: {
+  account: {
     type: [
       {
         name: { type: String, required: true },
@@ -84,6 +85,14 @@ const orderSchema = new Schema<OrderSchema>({
     },
     required: true,
   },
+  isCompleted: { type: Boolean, default: false },
+});
+
+orderSchema.pre("save", function (next) {
+  if (this.isCompleted === undefined) {
+    this.isCompleted = false;
+  }
+  next();
 });
 
 const Order = mongoose.model<OrderSchema>("Order", orderSchema);
