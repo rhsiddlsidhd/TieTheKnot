@@ -38,6 +38,7 @@ authInstance.interceptors.response.use(
   function (error) {
     if (error.response) {
       const status = Number(error.response.status);
+
       const message = error.response.data.message;
       const newError = new AuthCuntomError(status, message, "server");
 

@@ -5,10 +5,14 @@ import { postOrderInvite } from "../apis/api/order/postOrderInvite";
 import { postUploadFiles } from "../apis/api/upload/postUploadFiles";
 import { generateRandomId } from "../utils/generateRandomId";
 import { useDaumPostcodePopup } from "react-daum-postcode";
+import { AuthCuntomError } from "../apis/utils/instanceOfAuth";
+import { useNavigate } from "react-router";
 
 const Order = () => {
   useAuthFailRedirect();
+  const navigate = useNavigate();
   const galleryType = ["A", "B", "C", "D"];
+  const [error, setError] = useState<string>("");
   const [checkBox, setCheckBox] = useState<string[]>([]);
   const [weddingDate, setWeddingDate] = useState<string[]>([]);
   const [orderData, setOrderData] = useState<Record<string, any>>({
@@ -79,11 +83,12 @@ const Order = () => {
       }
       fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
     }
-    // setAddress(fullAddress);
+
     setOrderData((prev) => ({ ...prev, [field]: fullAddress }));
   };
 
   const handleDaumPopupOpen = () => {
+    setError("");
     open({ onComplete: handleComplete });
   };
 
@@ -97,7 +102,18 @@ const Order = () => {
       const _data = await postOrderInvite(data);
       console.log(_data);
     } catch (error) {
-      console.error(error);
+      if (error instanceof AuthCuntomError) {
+        setError(error.message);
+        if (error.status === 401) {
+          alert(
+            "로그인 세션이 만료되었습니다. 불편을 드려 죄송합니다. 다시 로그인해주세요. "
+          );
+          navigate("/");
+        }
+        console.error(`AuthCuntomError ${error.status}`);
+        console.error(`AuthCuntomError ${error.message}`);
+        console.error(`AuthCuntomError ${error.name}`);
+      }
     }
   };
 
@@ -303,213 +319,250 @@ const Order = () => {
     }
   }, [weddingDate]);
 
-  const weddingDateReset = () => {
+  const weddingDateReset = (field: string) => {
     setWeddingDate([]);
+    setOrderData((prev) => {
+      return { ...prev, [field]: "" };
+    });
   };
 
   return (
-    <form onSubmit={(e) => handleOrder(orderData, e)}>
-      <div>주소</div>
-      <input
-        style={{
-          width: `${orderData["weddingAddress"].length}em`,
-          minWidth: "13em",
-        }}
-        type="text"
-        onClick={() => handleDaumPopupOpen()}
-        readOnly
-        value={orderData["weddingAddress"]}
-      />
-      <div>날짜</div>
-      <input readOnly type="text" value={weddingDate} />
-      <input type="date" onChange={(e) => handleTestDate(e, setWeddingDate)} />
-      <input type="time" onChange={(e) => handleTestDate(e, setWeddingDate)} />
-      <button type="button" onClick={weddingDateReset}>
-        날짜 초기화
-      </button>
-      <div>계좌 이름</div>
-      <input
-        type="text"
-        onChange={(e) => handleOnchange("isAccount.name.groom", e)}
-        placeholder="신랑"
-      />
-      <input
-        type="text"
-        onChange={(e) => handleOnchange("isAccount.name.bride", e)}
-        placeholder="신부"
-      />
-      <div>계좌 정보</div>
-
-      <input
-        type="text"
-        onChange={(e) =>
-          handleOnchange("isAccount.bankDetail.bankname.groom", e)
-        }
-        placeholder="신랑 은행명"
-      />
-      <input
-        type="text"
-        onChange={(e) =>
-          handleOnchange("isAccount.bankDetail.bankname.bride", e)
-        }
-        placeholder="신부 은행명"
-      />
-      <input
-        type="text"
-        onChange={(e) =>
-          handleOnchange("isAccount.bankDetail.bankcode.groom", e)
-        }
-        placeholder="신랑 은행 코드"
-      />
-      <input
-        type="text"
-        onChange={(e) =>
-          handleOnchange("isAccount.bankDetail.bankcode.bride", e)
-        }
-        placeholder="신부 은행 코드"
-      />
-      <input
-        type="text"
-        onChange={(e) =>
-          handleOnchange("isAccount.bankDetail.accountNumber.groom", e)
-        }
-        placeholder="신랑 계좌 번호"
-      />
-      <input
-        type="text"
-        onChange={(e) =>
-          handleOnchange("isAccount.bankDetail.accountNumber.bride", e)
-        }
-        placeholder="신부 계좌 번호"
-      />
-      <div>부모님 성함</div>
-      <ParentsWrapper>
-        <IsDeceasedWrapper>
-          <div>故</div>
-          <input
-            onChange={(e) => handleOnchange("parents.isAlive.groom.father", e)}
-            type="checkbox"
-          />
-        </IsDeceasedWrapper>
+    <Container>
+      <Form onSubmit={(e) => handleOrder(orderData, e)}>
+        <div>
+          주소 <span>필수</span>
+        </div>
         <input
+          style={{
+            width: `${orderData["weddingAddress"].length}em`,
+            minWidth: "13em",
+          }}
           type="text"
-          onChange={(e) => handleOnchange("parents.names.groom.father", e)}
-          placeholder="신랑측 아버지"
+          onClick={() => handleDaumPopupOpen()}
+          readOnly
+          value={orderData["weddingAddress"]}
         />
-        <IsDeceasedWrapper>
-          <div>故</div>
-          <input
-            type="checkbox"
-            onChange={(e) => handleOnchange("parents.isAlive.groom.mother", e)}
-          />
-        </IsDeceasedWrapper>
-        <input
-          type="text"
-          onChange={(e) => handleOnchange("parents.names.groom.mother", e)}
-          placeholder="신랑측 어머니"
-        />
-      </ParentsWrapper>
-      <ParentsWrapper>
-        <IsDeceasedWrapper>
-          <div>故</div>
-          <input
-            type="checkbox"
-            onChange={(e) => handleOnchange("parents.isAlive.bride.father", e)}
-          />
-        </IsDeceasedWrapper>
-        <input
-          type="text"
-          onChange={(e) => handleOnchange("parents.names.bride.father", e)}
-          placeholder="신부측 아버지"
-        />
-        <IsDeceasedWrapper>
-          <div>故</div>
-          <input
-            type="checkbox"
-            onChange={(e) => handleOnchange("parents.isAlive.bride.mother", e)}
-          />
-        </IsDeceasedWrapper>
-        <input
-          type="text"
-          onChange={(e) => handleOnchange("parents.names.bride.mother", e)}
-          placeholder="신부측 어머니"
-        />
-      </ParentsWrapper>
-      <div>썸네일</div>
-      <button onClick={() => handleReset("thumnail")}>
-        썸네일 이미지 초기화
-      </button>
-      <br />
-      <input type="file" onChange={(e) => handleImgUrl("thumnail", e)} />
-      {orderData.thumnail.map((v: string, i: number) => {
-        return <div key={i}>{v}</div>;
-      })}
-      <div>갤러리</div>
-      <button onClick={() => handleReset("gallery")}>갤러리 초기화</button>
-      {/* 갤러리 하단에서 타입을 선택 => 타입을 선택하면 지정된 개수를 선택할수 있는 input type file 이 생성 */}
-      <DropDown>
-        <div>타입선택</div>
-        <ul>
-          {galleryType.map((type: string, i: number) => {
-            return (
-              <li
-                key={i}
-                data-set={type}
-                className="gallery"
-                onClick={(e) => handleSelectedType(e)}
+        <WeddingDate>
+          <div>
+            날짜{" "}
+            <span>
+              <button
+                type="button"
+                onClick={() => weddingDateReset("weddingDate")}
               >
-                {type}
-              </li>
-            );
-          })}
-        </ul>
-      </DropDown>
-      <div style={{ display: "flex" }}>
-        <div style={{ marginRight: "1rem" }}>갤러리 선택</div>
-        <button
-          onClick={() => handleGalleryDelete(orderData["gallery"], checkBox)}
-        >
-          DELETE
-        </button>
-      </div>
-      <GalleryContainer>
-        {Object.keys(orderData["gallery"]).map(
-          (galleryId: string, i: number) => {
-            const { type, urls } = orderData["gallery"][galleryId];
-            return (
-              <GalleryWrapper key={i}>
-                <label>
-                  <input
-                    id={galleryId}
-                    type="checkbox"
-                    onClick={(e) => handleCheckbox(e)}
-                  />
-                </label>
-                <div>
-                  <div>{type} 타입</div>
-                  <input
-                    type="file"
-                    onChange={(e) => handleGalleryUrl("gallery", galleryId, e)}
-                  />
-                </div>
-              </GalleryWrapper>
-            );
+                날짜 초기화
+              </button>
+            </span>
+          </div>
+          <input
+            type="date"
+            onChange={(e) => handleTestDate(e, setWeddingDate)}
+          />
+          <input
+            type="time"
+            onChange={(e) => handleTestDate(e, setWeddingDate)}
+            id="timeInput"
+          />
+          <br />
+          <input readOnly type="text" value={weddingDate} />
+        </WeddingDate>
+        <div>계좌 이름</div>
+        <input
+          type="text"
+          onChange={(e) => handleOnchange("isAccount.name.groom", e)}
+          placeholder="신랑"
+        />
+        <input
+          type="text"
+          onChange={(e) => handleOnchange("isAccount.name.bride", e)}
+          placeholder="신부"
+        />
+        <div>계좌 정보</div>
+        <input
+          type="text"
+          onChange={(e) =>
+            handleOnchange("isAccount.bankDetail.bankname.groom", e)
           }
-        )}
-      </GalleryContainer>
-      <button type="submit">제출</button>
-    </form>
+          placeholder="신랑 은행명"
+        />
+        <input
+          type="text"
+          onChange={(e) =>
+            handleOnchange("isAccount.bankDetail.bankname.bride", e)
+          }
+          placeholder="신부 은행명"
+        />
+        <input
+          type="text"
+          onChange={(e) =>
+            handleOnchange("isAccount.bankDetail.bankcode.groom", e)
+          }
+          placeholder="신랑 은행 코드"
+        />
+        <input
+          type="text"
+          onChange={(e) =>
+            handleOnchange("isAccount.bankDetail.bankcode.bride", e)
+          }
+          placeholder="신부 은행 코드"
+        />
+        <input
+          type="text"
+          onChange={(e) =>
+            handleOnchange("isAccount.bankDetail.accountNumber.groom", e)
+          }
+          placeholder="신랑 계좌 번호"
+        />
+        <input
+          type="text"
+          onChange={(e) =>
+            handleOnchange("isAccount.bankDetail.accountNumber.bride", e)
+          }
+          placeholder="신부 계좌 번호"
+        />
+        <div>부모님 성함</div>
+        <ParentsWrapper>
+          <IsDeceasedWrapper>
+            <div>故</div>
+            <input
+              onChange={(e) =>
+                handleOnchange("parents.isAlive.groom.father", e)
+              }
+              type="checkbox"
+            />
+          </IsDeceasedWrapper>
+          <input
+            type="text"
+            onChange={(e) => handleOnchange("parents.names.groom.father", e)}
+            placeholder="신랑측 아버지"
+          />
+          <IsDeceasedWrapper>
+            <div>故</div>
+            <input
+              type="checkbox"
+              onChange={(e) =>
+                handleOnchange("parents.isAlive.groom.mother", e)
+              }
+            />
+          </IsDeceasedWrapper>
+          <input
+            type="text"
+            onChange={(e) => handleOnchange("parents.names.groom.mother", e)}
+            placeholder="신랑측 어머니"
+          />
+        </ParentsWrapper>
+        <ParentsWrapper>
+          <IsDeceasedWrapper>
+            <div>故</div>
+            <input
+              type="checkbox"
+              onChange={(e) =>
+                handleOnchange("parents.isAlive.bride.father", e)
+              }
+            />
+          </IsDeceasedWrapper>
+          <input
+            type="text"
+            onChange={(e) => handleOnchange("parents.names.bride.father", e)}
+            placeholder="신부측 아버지"
+          />
+          <IsDeceasedWrapper>
+            <div>故</div>
+            <input
+              type="checkbox"
+              onChange={(e) =>
+                handleOnchange("parents.isAlive.bride.mother", e)
+              }
+            />
+          </IsDeceasedWrapper>
+          <input
+            type="text"
+            onChange={(e) => handleOnchange("parents.names.bride.mother", e)}
+            placeholder="신부측 어머니"
+          />
+        </ParentsWrapper>
+        <div>썸네일</div>
+        <button onClick={() => handleReset("thumnail")}>
+          썸네일 이미지 초기화
+        </button>
+        <br />
+        <input type="file" onChange={(e) => handleImgUrl("thumnail", e)} />
+        {orderData.thumnail.map((v: string, i: number) => {
+          return <div key={i}>{v}</div>;
+        })}
+        <div>갤러리</div>
+        <button onClick={() => handleReset("gallery")}>갤러리 초기화</button>
+        {/* 갤러리 하단에서 타입을 선택 => 타입을 선택하면 지정된 개수를 선택할수 있는 input type file 이 생성 */}
+        <DropDown>
+          <div>타입선택</div>
+          <ul>
+            {galleryType.map((type: string, i: number) => {
+              return (
+                <li
+                  key={i}
+                  data-set={type}
+                  className="gallery"
+                  onClick={(e) => handleSelectedType(e)}
+                >
+                  {type}
+                </li>
+              );
+            })}
+          </ul>
+        </DropDown>
+        <div style={{ display: "flex" }}>
+          <div style={{ marginRight: "1rem" }}>갤러리 선택</div>
+          <button
+            onClick={() => handleGalleryDelete(orderData["gallery"], checkBox)}
+          >
+            DELETE
+          </button>
+        </div>
+        <GalleryContainer>
+          {Object.keys(orderData["gallery"]).map(
+            (galleryId: string, i: number) => {
+              const { type, urls } = orderData["gallery"][galleryId];
+              return (
+                <GalleryWrapper key={i}>
+                  <label>
+                    <input
+                      id={galleryId}
+                      type="checkbox"
+                      onClick={(e) => handleCheckbox(e)}
+                    />
+                  </label>
+                  <div>
+                    <div>{type} 타입</div>
+                    <input
+                      type="file"
+                      onChange={(e) =>
+                        handleGalleryUrl("gallery", galleryId, e)
+                      }
+                    />
+                  </div>
+                </GalleryWrapper>
+              );
+            }
+          )}
+        </GalleryContainer>
+        <div style={{ display: "flex" }}>
+          <button type="submit">제출</button>
+          <ErrorSpan style={{ marginLeft: "1rem" }}>{error}</ErrorSpan>
+        </div>
+      </Form>
+    </Container>
   );
 };
 
 export default Order;
 
 const DropDown = styled.div`
-  background-color: green;
+  border: 1px solid black;
   &:hover {
     cursor: pointer;
     & > ul {
       display: block;
+      list-style: none;
       & > li:hover {
         background-color: pink;
       }
@@ -547,3 +600,21 @@ const IsDeceasedWrapper = styled.div`
 const ParentsWrapper = styled.div`
   display: flex;
 `;
+
+const ErrorSpan = styled.div`
+  color: red;
+  font-size: 0.75rem;
+`;
+
+const Form = styled.form`
+  width: 80%;
+`;
+
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
+
+const WeddingDate = styled.div``;
