@@ -23,22 +23,26 @@ class OrderController {
       const { sub: googleId } = infoData;
       const user = await userService.findUserByGoogleId(googleId);
 
-      // let accountId = null;
-      // if (isAccount) {
-      //   const newAccount = new Account(isAccount);
-      //   await newAccount.save();
-      //   accountId = newAccount;
-      // }
+      if (!weddingAddress) {
+        throw new CustomError(400, `웨딩홀 주소는 필수 입력입니다.`);
+      }
 
-      // let parentsId = null;
-      // if (parents) {
-      //   const newParents = new Parents(parents);
-      //   await newParents.save();
-      //   parentsId = newParents;
-      // }
+      if (!weddingDate) {
+        throw new CustomError(400, `웨딩 날짜, 시간은 필수 입력입니다.`);
+      }
 
-      if (!weddingAddress || !weddingDate) {
-        throw new CustomError(400, `weddingAddress, weddingDate is require`);
+      if (thumnail.length !== 2) {
+        throw new CustomError(
+          400,
+          `썸네일은 필수 입력입니다. 총 두장을 선택해주세요.`
+        );
+      }
+
+      if (!gallery) {
+        throw new CustomError(
+          400,
+          `갤러리는 필수 입력입니다. 1가지 타입 이상 선택해주세요.`
+        );
       }
 
       const newData = new OrderModel({
@@ -50,7 +54,7 @@ class OrderController {
         thumnail,
         gallery,
       });
-      console.log(newData);
+
       await newData.save();
 
       res.status(200).json({
