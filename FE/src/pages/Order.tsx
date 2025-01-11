@@ -1,212 +1,193 @@
-import React, { MouseEventHandler, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import useAuthFailRedirect from "../hooks/useAuthFailRedirect";
 import { postOrderInvite } from "../apis/api/order/postOrderInvite";
 import { postUploadFiles } from "../apis/api/upload/postUploadFiles";
 import { generateRandomId } from "../utils/generateRandomId";
-import { useDaumPostcodePopup } from "react-daum-postcode";
+
 import { AuthCuntomError } from "../apis/utils/instanceOfAuth";
 import { useNavigate } from "react-router";
+import orderDataValidator from "../utils/validators/orderDataValidator";
+import { createMaxLengthUrls, transformFilesToUrls } from "../utils/urlUtils";
+import UseDaumPostcodePopup from "../hooks/UseDaumPostcodePopup";
+import { handleError } from "./../utils/error/errorHandler";
+
+export interface Gallery {
+  [key: string]: {
+    type: string;
+    urls: string[];
+  };
+}
+
+export interface Account {
+  name: string;
+  bankName: string;
+  accountNumber: string;
+}
+
+export interface Parent {
+  badge: string;
+  name: string;
+  isAlive: boolean; //추후에 데이터명 수정 ===> isDeceased
+}
+
+export interface OrderFormData {
+  weddingAddress: string;
+  weddingDate: string;
+  account: Account[];
+  parent: Parent[];
+  thumnail: string[];
+  gallery: Gallery;
+}
 
 const Order = () => {
   useAuthFailRedirect();
   const navigate = useNavigate();
+  const badge = ["신랑측", "신부측"];
   const galleryType = ["A", "B", "C", "D"];
   const [error, setError] = useState<string>("");
   const [checkBox, setCheckBox] = useState<string[]>([]);
   const [weddingDate, setWeddingDate] = useState<string[]>([]);
-  const [orderData, setOrderData] = useState<Record<string, any>>({
+  const [orderData, setOrderData] = useState<OrderFormData>({
     weddingAddress: "",
     weddingDate: "",
-    isAccount: {
-      name: {
-        groom: "",
-        bride: "",
-      },
-      bankDetail: {
-        bankname: {
-          groom: "",
-          bride: "",
-        },
-        bankcode: {
-          groom: "",
-          bride: "",
-        },
-        accountNumber: {
-          groom: "",
-          bride: "",
-        },
-      },
-    },
-    parents: {
-      names: {
-        groom: {
-          father: "",
-          mother: "",
-        },
-        bride: {
-          father: "",
-          mother: "",
-        },
-      },
-      isAlive: {
-        groom: {
-          father: false,
-          mother: false,
-        },
-        bride: {
-          father: false,
-          mother: false,
-        },
-      },
-    },
+    account: [],
+    parent: [],
     thumnail: [],
     gallery: {},
   });
 
-  const open = useDaumPostcodePopup(
-    "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
-  );
-
-  const handleComplete = (data: any) => {
-    const field = "weddingAddress";
-    let fullAddress = data.address;
-    let extraAddress = "";
-
-    if (data.addressType === "R") {
-      if (data.bname !== "") {
-        extraAddress += data.bname;
-      }
-      if (data.buildingName !== "") {
-        extraAddress +=
-          extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
-      }
-      fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
+  useEffect(() => {
+    if (error === "Invalid jwt") {
+      alert(
+        "로그인 세션이 만료되었습니다. 불편을 드려 죄송합니다. 다시 로그인해주세요. "
+      );
+      navigate("/");
     }
+  }, [error, navigate]);
 
-    setOrderData((prev) => ({ ...prev, [field]: fullAddress }));
-  };
+  useEffect(() => {
+    if (weddingDate.length === 2) {
+      const field = "weddingDate";
+      setOrderData((prev) => ({ ...prev, [field]: weddingDate.join(" ") }));
+    }
+  }, [weddingDate]);
 
-  const handleDaumPopupOpen = () => {
-    setError("");
-    open({ onComplete: handleComplete });
-  };
-
-  const handleOrder = async (
-    data: Record<string, any>,
-    e: React.FormEvent<HTMLFormElement>
+  const handleSubmitOrder = async (
+    data: OrderFormData,
+    e: React.FormEvent<HTMLFormElement>,
+    success: () => void
   ): Promise<void> => {
     e.preventDefault();
 
     try {
+      /**
+       * 여기서 타입에 따른 urls의 개수를 체크할 수 밖에 없다~
+       */
+      orderDataValidator.weddingAddressValidator(data.weddingAddress);
+      orderDataValidator.weddingDateValidator(data.weddingDate);
+      orderDataValidator.weddingAccountValidator(data.account);
+      orderDataValidator.weddingParentValidator(data.parent);
+      orderDataValidator.weddingThumnail(data.thumnail);
+      orderDataValidator.weddingGallery(data.gallery);
+
       const _data = await postOrderInvite(data);
-      console.log(_data);
-    } catch (error) {
-      if (error instanceof AuthCuntomError) {
-        setError(error.message);
-        if (error.status === 401) {
-          alert(
-            "로그인 세션이 만료되었습니다. 불편을 드려 죄송합니다. 다시 로그인해주세요. "
-          );
-          navigate("/");
-        }
-        console.error(`AuthCuntomError ${error.status}`);
-        console.error(`AuthCuntomError ${error.message}`);
-        console.error(`AuthCuntomError ${error.name}`);
+
+      const { message } = _data;
+      if (message === "success") {
+        alert("주문이 완료되었습니다.");
+        success();
       }
+    } catch (error) {
+      handleError(error, setError);
     }
   };
 
   const handleOnchange = (
-    field: string,
+    field: keyof OrderFormData,
+    optionKey: keyof Account | keyof Parent,
+    index: number,
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const fields = field.split(".");
     const { checked, value, type } = e.target;
     setOrderData((prev) => {
-      let newData = { ...prev };
-      let temp = newData;
-      fields.forEach((field, index) => {
-        if (index === fields.length - 1) {
-          if (type === "checkbox") {
-            temp[field] = checked;
-          } else {
-            temp[field] = value;
-          }
-        } else {
-          temp = temp[field];
-        }
-      });
-      return newData;
+      if (field === "account" && Array.isArray(prev[field])) {
+        const updatedField = [...prev[field]];
+
+        updatedField[index] = {
+          ...updatedField[index],
+          [optionKey]: value,
+        };
+        return { ...prev, [field]: updatedField };
+      }
+      if (field === "parent" && Array.isArray(prev[field])) {
+        const updatedField = [...prev[field]];
+
+        updatedField[index] = {
+          ...updatedField[index],
+          [optionKey]: type === "checkbox" ? checked : value,
+        };
+        return { ...prev, [field]: updatedField };
+      }
+      return prev;
     });
   };
-  console.log(orderData);
 
-  // const uploadFile = async (file: File): Promise<string | void> => {
-  //   try {
-  //     const fileUrl = await postUploadFiles(file);
-
-  //     return fileUrl;
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
-  const getFileUrls = async (files: File[]): Promise<string[]> => {
-    try {
-      let fileUrls: string[] = [];
-      if (!files) {
-        throw new Error(`files is ${typeof files}`);
+  const addOptionField = (
+    field: keyof OrderFormData,
+    e: React.MouseEvent<HTMLButtonElement>
+  ): void => {
+    e.preventDefault();
+    setOrderData((prev) => {
+      if (field === "account" && Array.isArray(prev[field])) {
+        const _prev = [...prev[field]];
+        const updatedData = [
+          ..._prev,
+          { name: "", bankName: "", accountNumber: "" },
+        ];
+        return { ...prev, [field]: updatedData };
+      } else if (field === "parent" && Array.isArray(prev[field])) {
+        const _prev = [...prev[field]];
+        const updatedData = [..._prev, { badge: "", name: "", isAlive: false }];
+        return { ...prev, [field]: updatedData };
       }
-
-      const _file = [...files];
-      for (const file of _file) {
-        const fileUrl = await postUploadFiles(file);
-        fileUrls.push(fileUrl);
-      }
-
-      return fileUrls;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
-      return [];
-    }
+      return prev;
+    });
   };
 
   const handleImgUrl = async (
     field: string,
     e: React.ChangeEvent<HTMLInputElement>
   ): Promise<void> => {
-    const files = e.target.files;
-    if (files) {
-      const fileUrls = await getFileUrls(files && Array.from(files));
+    try {
+      const files = e.target.files;
+      if (files) {
+        const fileUrls = await transformFilesToUrls(files && Array.from(files));
 
-      setOrderData((prev) => {
-        const __prev = { ...prev };
-        if (__prev[field].length + 1 > 2) {
-          alert("이미지는 최대 2장까지 입력이 가능합니다");
-          return { ...prev };
+        if (!fileUrls) {
+          throw new Error("URL이 생성되지 않았습니다.");
         }
-        return {
-          ...prev,
-          [field]: [...prev[field], ...fileUrls],
-        };
-      });
+        setOrderData((prev) => {
+          if (field === "thumnail" && Array.isArray(prev[field])) {
+            const _prev = [...prev[field]];
+            if (_prev.length + 1 > 2) {
+              alert("썸네일은 최대 2장까지 입력이 가능합니다.");
+              return prev;
+            }
+            return {
+              ...prev,
+              [field]: [..._prev, ...fileUrls],
+            };
+          }
+          return prev;
+        });
+      }
+    } catch (error) {
+      handleError(error, setError);
     }
   };
 
-  const createMaxLengthUrls = (type: string): number => {
-    const maxUrls: Record<string, number> = {
-      A: 3,
-      B: 3,
-      C: 4,
-      D: 4,
-    };
-    return maxUrls[type];
-  };
-
-  const handleGalleryUrl = async (
+  const handleGalleryImageUpload = async (
     field: string,
     galleryId: string,
     e: React.ChangeEvent<HTMLInputElement>
@@ -214,51 +195,73 @@ const Order = () => {
     const files = e.target.files;
 
     if (files) {
-      const fileUrls = await getFileUrls(files && Array.from(files));
+      const fileUrls = await transformFilesToUrls(files && Array.from(files));
 
+      if (!fileUrls) {
+        throw new Error("URL이 생성되지 않았습니다.");
+      }
       setOrderData((prev) => {
-        const { type, urls: prevUrls } = prev[field][galleryId];
-        const maxLength = createMaxLengthUrls(type);
-        const currentLength = 1;
+        if (field === "gallery") {
+          const _prev = prev[field][galleryId];
+          const { type, urls: prevUrls } = _prev;
+          const maxLength = createMaxLengthUrls(type);
+          const updatedData = {
+            type,
+            urls: [...prevUrls, ...fileUrls],
+          };
 
-        if (maxLength < prevUrls.length + currentLength) {
-          alert(`${type}타입에 따른 이미지 개수가 초과하였습니다.`);
-          return prev;
-        }
+          if (maxLength < updatedData.urls.length) {
+            alert(
+              `${type}타입(${maxLength})에 따른 이미지 개수가 초과하였습니다.`
+            );
+            return prev;
+          }
 
-        return {
-          ...prev,
-          [field]: {
-            ...prev[field],
-            [galleryId]: {
-              ...prev[galleryId],
-              type,
-              urls: [...prevUrls, ...fileUrls],
+          return {
+            ...prev,
+            [field]: {
+              ...prev[field],
+              [galleryId]: updatedData,
             },
-          },
-        };
+          };
+        }
+        return prev;
       });
     }
   };
 
-  const handleReset = (field: string) => {
+  const handleThumnailReset = (
+    field: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
     setOrderData((prev) => {
-      const updatedField = [...prev[field]];
-      updatedField.pop();
-      return {
-        ...prev,
-        [field]: updatedField,
-      };
+      if (field === "thumnail" && Array.isArray(prev[field])) {
+        const updatedField = [...prev[field]];
+        updatedField.pop();
+        return {
+          ...prev,
+          [field]: updatedField,
+        };
+      }
+
+      return prev;
     });
   };
 
   const handleSelectedType: React.MouseEventHandler<HTMLLIElement> = (e) => {
-    const type = e.currentTarget.dataset.set;
+    const type = e.currentTarget.dataset.value;
     const gallery = e.currentTarget.className;
 
     if (type && gallery) {
       const _id = generateRandomId();
       setOrderData((prev) => {
+        const _prev = prev.gallery;
+        const maxLength = 7;
+        if (Object.keys(_prev).length + 1 > maxLength) {
+          alert("갤러리 타입은 최대 7개 선택 가능합니다.");
+          return prev;
+        }
         return {
           ...prev,
           gallery: {
@@ -270,7 +273,7 @@ const Order = () => {
     }
   };
 
-  const handleCheckbox = (e: React.MouseEvent<HTMLInputElement>): void => {
+  const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const _id = e.currentTarget.id;
     //체크박스 클릭시 _id 담은 배열을 왔다갔다하기
     //클릭을 안한 박스를 클릭할 수 있고, 클릭을 한 박스를 클릭할 수 있다.
@@ -283,11 +286,13 @@ const Order = () => {
 
   const handleGalleryDelete = (
     totalData: Record<string, any>,
-    selectedData: string[]
+    checkBox: string[],
+    e: React.MouseEvent<HTMLButtonElement>
   ): void => {
+    e.preventDefault();
     let updatedGalleryIds = { ...totalData };
 
-    selectedData.forEach((id: string) => {
+    checkBox.forEach((id: string) => {
       delete updatedGalleryIds[id];
     });
 
@@ -295,9 +300,10 @@ const Order = () => {
       ...prevData,
       gallery: updatedGalleryIds,
     }));
+    setCheckBox([]);
   };
 
-  const handleTestDate = (
+  const handleWeddingDateTime = (
     e: React.ChangeEvent<HTMLInputElement>,
     setWeddingDate: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
@@ -312,13 +318,6 @@ const Order = () => {
     });
   };
 
-  useEffect(() => {
-    if (weddingDate.length === 2) {
-      const field = "weddingDate";
-      setOrderData((prev) => ({ ...prev, [field]: weddingDate.join(" ") }));
-    }
-  }, [weddingDate]);
-
   const weddingDateReset = (field: string) => {
     setWeddingDate([]);
     setOrderData((prev) => {
@@ -326,21 +325,39 @@ const Order = () => {
     });
   };
 
+  const handleOnclick = (
+    field: keyof OrderFormData,
+    optionKey: keyof Account | keyof Parent,
+    index: number,
+    e: React.FormEvent<HTMLElement>
+  ) => {
+    const { value } = e.currentTarget.dataset;
+    setOrderData((prev) => {
+      if (field === "parent" && Array.isArray(prev[field])) {
+        const updatedField = [...prev[field]];
+        updatedField[index] = {
+          ...updatedField[index],
+          [optionKey]: value,
+        };
+        return { ...prev, [field]: updatedField };
+      }
+
+      return prev;
+    });
+  };
+
   return (
     <Container>
-      <Form onSubmit={(e) => handleOrder(orderData, e)}>
-        <div>
-          주소 <span>필수</span>
-        </div>
-        <input
-          style={{
-            width: `${orderData["weddingAddress"].length}em`,
-            minWidth: "13em",
-          }}
-          type="text"
-          onClick={() => handleDaumPopupOpen()}
-          readOnly
-          value={orderData["weddingAddress"]}
+      <Form
+        onSubmit={(e) =>
+          handleSubmitOrder(orderData, e, () => navigate("/register"))
+        }
+      >
+        <div>주소</div>
+        <UseDaumPostcodePopup
+          setOrderData={setOrderData}
+          setError={setError}
+          orderData={orderData}
         />
         <WeddingDate>
           <div>
@@ -356,133 +373,118 @@ const Order = () => {
           </div>
           <input
             type="date"
-            onChange={(e) => handleTestDate(e, setWeddingDate)}
+            onChange={(e) => handleWeddingDateTime(e, setWeddingDate)}
           />
           <input
             type="time"
-            onChange={(e) => handleTestDate(e, setWeddingDate)}
+            onChange={(e) => handleWeddingDateTime(e, setWeddingDate)}
             id="timeInput"
           />
           <br />
           <input readOnly type="text" value={weddingDate} />
         </WeddingDate>
-        <div>계좌 이름</div>
-        <input
-          type="text"
-          onChange={(e) => handleOnchange("isAccount.name.groom", e)}
-          placeholder="신랑"
-        />
-        <input
-          type="text"
-          onChange={(e) => handleOnchange("isAccount.name.bride", e)}
-          placeholder="신부"
-        />
-        <div>계좌 정보</div>
-        <input
-          type="text"
-          onChange={(e) =>
-            handleOnchange("isAccount.bankDetail.bankname.groom", e)
-          }
-          placeholder="신랑 은행명"
-        />
-        <input
-          type="text"
-          onChange={(e) =>
-            handleOnchange("isAccount.bankDetail.bankname.bride", e)
-          }
-          placeholder="신부 은행명"
-        />
-        <input
-          type="text"
-          onChange={(e) =>
-            handleOnchange("isAccount.bankDetail.bankcode.groom", e)
-          }
-          placeholder="신랑 은행 코드"
-        />
-        <input
-          type="text"
-          onChange={(e) =>
-            handleOnchange("isAccount.bankDetail.bankcode.bride", e)
-          }
-          placeholder="신부 은행 코드"
-        />
-        <input
-          type="text"
-          onChange={(e) =>
-            handleOnchange("isAccount.bankDetail.accountNumber.groom", e)
-          }
-          placeholder="신랑 계좌 번호"
-        />
-        <input
-          type="text"
-          onChange={(e) =>
-            handleOnchange("isAccount.bankDetail.accountNumber.bride", e)
-          }
-          placeholder="신부 계좌 번호"
-        />
-        <div>부모님 성함</div>
-        <ParentsWrapper>
-          <IsDeceasedWrapper>
-            <div>故</div>
-            <input
-              onChange={(e) =>
-                handleOnchange("parents.isAlive.groom.father", e)
-              }
-              type="checkbox"
-            />
-          </IsDeceasedWrapper>
-          <input
-            type="text"
-            onChange={(e) => handleOnchange("parents.names.groom.father", e)}
-            placeholder="신랑측 아버지"
-          />
-          <IsDeceasedWrapper>
-            <div>故</div>
-            <input
-              type="checkbox"
-              onChange={(e) =>
-                handleOnchange("parents.isAlive.groom.mother", e)
-              }
-            />
-          </IsDeceasedWrapper>
-          <input
-            type="text"
-            onChange={(e) => handleOnchange("parents.names.groom.mother", e)}
-            placeholder="신랑측 어머니"
-          />
-        </ParentsWrapper>
-        <ParentsWrapper>
-          <IsDeceasedWrapper>
-            <div>故</div>
-            <input
-              type="checkbox"
-              onChange={(e) =>
-                handleOnchange("parents.isAlive.bride.father", e)
-              }
-            />
-          </IsDeceasedWrapper>
-          <input
-            type="text"
-            onChange={(e) => handleOnchange("parents.names.bride.father", e)}
-            placeholder="신부측 아버지"
-          />
-          <IsDeceasedWrapper>
-            <div>故</div>
-            <input
-              type="checkbox"
-              onChange={(e) =>
-                handleOnchange("parents.isAlive.bride.mother", e)
-              }
-            />
-          </IsDeceasedWrapper>
-          <input
-            type="text"
-            onChange={(e) => handleOnchange("parents.names.bride.mother", e)}
-            placeholder="신부측 어머니"
-          />
-        </ParentsWrapper>
+        <AccountWrapper>
+          <button onClick={(e) => addOptionField("account", e)}>
+            {" "}
+            계좌 추가
+          </button>
+          <ul>
+            {orderData.account.map((v, index) => {
+              return (
+                <li key={index}>
+                  <input
+                    type="text"
+                    placeholder="계좌명의"
+                    onChange={(e) =>
+                      handleOnchange("account", "name", index, e)
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="은행명"
+                    onChange={(e) =>
+                      handleOnchange("account", "bankName", index, e)
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="계좌번호"
+                    onChange={(e) =>
+                      handleOnchange("account", "accountNumber", index, e)
+                    }
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </AccountWrapper>
+        <AccountWrapper>
+          <button onClick={(e) => addOptionField("parent", e)}>혼주</button>
+          {orderData.parent.map((_, index) => {
+            const badgeBgColors = {
+              default: "#6c757d",
+              groomSide: "#0dcaf0",
+              other: "#FFC107",
+            };
+
+            const badgeBgColor =
+              orderData.parent[index].badge === ""
+                ? badgeBgColors.default
+                : orderData.parent[index].badge === "신랑측"
+                ? badgeBgColors.groomSide
+                : badgeBgColors.other;
+            const badgeColor =
+              orderData.parent[index].badge === "" ? "#e3e5e6" : "#02181c";
+            return (
+              <ParentsItems key={index}>
+                <BadgeDropdown
+                  $badgeBgColor={badgeBgColor}
+                  $badgeColor={badgeColor}
+                >
+                  <div>
+                    {orderData.parent[index].badge
+                      ? orderData.parent[index].badge
+                      : "태그"}
+                  </div>
+                  <ul>
+                    {badge.map((item, i) => {
+                      const badgeColor = ["#0dcaf0", "#FFC107"];
+
+                      return (
+                        <li
+                          style={{ backgroundColor: badgeColor[i] }}
+                          data-value={item}
+                          key={i}
+                          onClick={(e) =>
+                            handleOnclick("parent", "badge", index, e)
+                          }
+                        >
+                          {item}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </BadgeDropdown>
+                <InputTextWrapper>
+                  <input
+                    type="checkbox"
+                    onChange={(e) =>
+                      handleOnchange("parent", "isAlive", index, e)
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="성함"
+                    onChange={(e) => handleOnchange("parent", "name", index, e)}
+                  />
+                </InputTextWrapper>
+              </ParentsItems>
+            );
+          })}
+        </AccountWrapper>
+
         <div>썸네일</div>
-        <button onClick={() => handleReset("thumnail")}>
+        <button onClick={(e) => handleThumnailReset("thumnail", e)}>
           썸네일 이미지 초기화
         </button>
         <br />
@@ -491,29 +493,30 @@ const Order = () => {
           return <div key={i}>{v}</div>;
         })}
         <div>갤러리</div>
-        <button onClick={() => handleReset("gallery")}>갤러리 초기화</button>
         {/* 갤러리 하단에서 타입을 선택 => 타입을 선택하면 지정된 개수를 선택할수 있는 input type file 이 생성 */}
-        <DropDown>
+        <GalleryTypeDropdown>
           <div>타입선택</div>
           <ul>
             {galleryType.map((type: string, i: number) => {
               return (
                 <li
                   key={i}
-                  data-set={type}
+                  data-value={type}
                   className="gallery"
                   onClick={(e) => handleSelectedType(e)}
                 >
-                  {type}
+                  {type} {createMaxLengthUrls(type)}
                 </li>
               );
             })}
           </ul>
-        </DropDown>
+        </GalleryTypeDropdown>
         <div style={{ display: "flex" }}>
           <div style={{ marginRight: "1rem" }}>갤러리 선택</div>
           <button
-            onClick={() => handleGalleryDelete(orderData["gallery"], checkBox)}
+            onClick={(e) =>
+              handleGalleryDelete(orderData["gallery"], checkBox, e)
+            }
           >
             DELETE
           </button>
@@ -521,22 +524,25 @@ const Order = () => {
         <GalleryContainer>
           {Object.keys(orderData["gallery"]).map(
             (galleryId: string, i: number) => {
-              const { type, urls } = orderData["gallery"][galleryId];
+              const { type } = orderData["gallery"][galleryId];
               return (
                 <GalleryWrapper key={i}>
                   <label>
                     <input
                       id={galleryId}
                       type="checkbox"
-                      onClick={(e) => handleCheckbox(e)}
+                      checked={checkBox.includes(galleryId)}
+                      onChange={(e) => handleCheckbox(e)}
                     />
                   </label>
                   <div>
-                    <div>{type} 타입</div>
+                    <div>
+                      {type} 타입 {createMaxLengthUrls(type)}장
+                    </div>
                     <input
                       type="file"
                       onChange={(e) =>
-                        handleGalleryUrl("gallery", galleryId, e)
+                        handleGalleryImageUpload("gallery", galleryId, e)
                       }
                     />
                   </div>
@@ -555,14 +561,91 @@ const Order = () => {
 };
 
 export default Order;
+const InputTextWrapper = styled.div`
+  display: flex;
+  background-color: white;
+  & > input[type="checkbox"] {
+    position: relative;
+    width: 3rem;
 
-const DropDown = styled.div`
-  border: 1px solid black;
+    &::before {
+      content: "故";
+      position: absolute;
+    }
+  }
+`;
+
+const ParentsItems = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+const BadgeDropdown = styled.div<{
+  $badgeBgColor: string;
+  $badgeColor: string;
+}>`
+  display: flex;
+  & > div:first-child {
+    display: flex;
+    justify-content: center;
+    background-color: ${(props) => props.$badgeBgColor};
+    border-radius: 0.5rem;
+    width: 3.5rem;
+    font-size: 0.725rem;
+    font-weight: bold;
+    padding: 0.25rem;
+    color: ${(props) => props.$badgeColor};
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+      rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+  }
+  & > ul {
+    list-style: none;
+    display: none;
+  }
+  &:hover {
+    ul {
+      display: flex;
+
+      & > li {
+        margin: 0 0.25rem;
+        display: flex;
+        justify-content: center;
+        background-color: #0dcaf0;
+        border-radius: 0.5rem;
+        width: 3.5rem;
+        font-size: 0.725rem;
+        font-weight: bold;
+        padding: 0.25rem;
+        color: #02181c;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+          rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+      }
+    }
+  }
+`;
+
+const AccountWrapper = styled.div`
+  margin: 1rem 0;
+  & > ul {
+    list-style: none;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+      rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
+      rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+    display: flex;
+    flex-wrap: wrap;
+  }
+`;
+
+const GalleryTypeDropdown = styled.div`
+  width: 25%;
+  position: relative;
   &:hover {
     cursor: pointer;
     & > ul {
+      position: absolute;
+      background-color: gray;
       display: block;
       list-style: none;
+      width: 100%;
       & > li:hover {
         background-color: pink;
       }
@@ -576,29 +659,17 @@ const DropDown = styled.div`
 
 const GalleryContainer = styled.div`
   width: 100%;
-  background-color: #f1b3bd;
   display: flex;
   flex-direction: column;
   width: fit-content;
-  & > div {
-  }
 `;
 
 const GalleryWrapper = styled.div`
   display: flex;
   align-items: center;
   & > label {
-    padding: 1rem;
+    padding: 0 0.5rem;
   }
-`;
-
-const IsDeceasedWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const ParentsWrapper = styled.div`
-  display: flex;
 `;
 
 const ErrorSpan = styled.div`

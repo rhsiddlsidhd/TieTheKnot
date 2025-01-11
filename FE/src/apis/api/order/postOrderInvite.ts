@@ -1,4 +1,3 @@
-import axios from "axios";
 import authInstance from "../../utils/instanceOfAuth";
 
 export const postOrderInvite = async (data: any) => {

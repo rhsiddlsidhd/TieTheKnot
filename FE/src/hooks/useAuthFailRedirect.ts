@@ -40,7 +40,6 @@ const useAuthFailRedirect = (): { isAuth: boolean } => {
   }, [isAuth, setIsAuth]);
 
   useEffect(() => {
-    console.log(isAuth);
     const checkAuth = async () => {
       const path = "/";
 
