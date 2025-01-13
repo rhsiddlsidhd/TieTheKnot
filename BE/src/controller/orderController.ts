@@ -29,8 +29,8 @@ class OrderController {
         user: user._id,
         weddingAddress,
         weddingDate,
-        account,
-        parent,
+        account: account.length === 0 ? null : account,
+        parent: parent.length === 0 ? null : parent,
         thumnail,
         gallery,
       });

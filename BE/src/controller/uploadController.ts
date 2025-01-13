@@ -6,7 +6,6 @@ class UploadController {
   postGalleryUrl = (req: Request, res: Response) => {
     try {
       const files = req.files;
-      console.log(files);
       const fileUrl = uploadServices.createFileName(files);
 
       res.status(200).json({

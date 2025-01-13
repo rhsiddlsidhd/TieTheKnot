@@ -31,13 +31,22 @@ class OrderService {
         );
       }
 
-      if (!gallery) {
+      if (Object.keys(gallery).length === 0) {
         throw new CustomError(
           400,
           `갤러리는 필수 입력입니다. 1가지 타입 이상 선택해주세요.`
         );
       }
-      console.log("orderDataVerify :", account);
+      const entries =
+        gallery instanceof Map ? [...gallery] : Object.entries(gallery);
+      for (const [key, value] of entries) {
+        if (!value.urls || value.urls.length === 0) {
+          throw new CustomError(
+            400,
+            `갤러리 타입에 맞는 이미지 URL 수량은 필수 입력입니다.`
+          );
+        }
+      }
 
       return data;
     } catch (error) {

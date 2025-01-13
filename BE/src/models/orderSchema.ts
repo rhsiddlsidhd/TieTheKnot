@@ -57,6 +57,10 @@ const orderSchema = new Schema<OrderSchema>({
   parent: {
     type: [
       {
+        badge: {
+          type: String,
+          required: true,
+        },
         name: {
           type: String,
           required: true,
@@ -92,6 +96,7 @@ orderSchema.pre("save", function (next) {
   if (this.isCompleted === undefined) {
     this.isCompleted = false;
   }
+
   next();
 });
 
