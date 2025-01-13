@@ -2,15 +2,13 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import useAuthFailRedirect from "../hooks/useAuthFailRedirect";
 import { postOrderInvite } from "../apis/api/order/postOrderInvite";
-import { postUploadFiles } from "../apis/api/upload/postUploadFiles";
 import { generateRandomId } from "../utils/generateRandomId";
-
-import { AuthCuntomError } from "../apis/utils/instanceOfAuth";
 import { useNavigate } from "react-router";
 import orderDataValidator from "../utils/validators/orderDataValidator";
 import { createMaxLengthUrls, transformFilesToUrls } from "../utils/urlUtils";
 import UseDaumPostcodePopup from "../hooks/UseDaumPostcodePopup";
 import { handleError } from "./../utils/error/errorHandler";
+import { updateField } from "../utils/orderFormUtils";
 
 export interface Gallery {
   [key: string]: {
@@ -111,23 +109,34 @@ const Order = () => {
   ) => {
     const { checked, value, type } = e.target;
     setOrderData((prev) => {
-      if (field === "account" && Array.isArray(prev[field])) {
-        const updatedField = [...prev[field]];
-
-        updatedField[index] = {
-          ...updatedField[index],
-          [optionKey]: value,
-        };
-        return { ...prev, [field]: updatedField };
+      if (field === "account") {
+        return updateField(prev, field, index, optionKey, value);
       }
-      if (field === "parent" && Array.isArray(prev[field])) {
-        const updatedField = [...prev[field]];
+      if (field === "parent") {
+        return updateField(
+          prev,
+          field,
+          index,
+          optionKey,
+          type === "checkbox" ? checked : value
+        );
+      }
 
-        updatedField[index] = {
-          ...updatedField[index],
-          [optionKey]: type === "checkbox" ? checked : value,
-        };
-        return { ...prev, [field]: updatedField };
+      return prev;
+    });
+  };
+
+  const handleOnclick = (
+    field: keyof OrderFormData,
+    optionKey: keyof Parent,
+    index: number,
+    e: React.FormEvent<HTMLElement>
+  ) => {
+    const { value } = e.currentTarget.dataset;
+    setOrderData((prev) => {
+      if (!Array.isArray(prev[field])) return prev;
+      if (field === "parent" && value) {
+        return updateField(prev, field, index, optionKey, value);
       }
       return prev;
     });
@@ -139,14 +148,15 @@ const Order = () => {
   ): void => {
     e.preventDefault();
     setOrderData((prev) => {
-      if (field === "account" && Array.isArray(prev[field])) {
+      if (Array.isArray(prev[field])) return prev;
+      if (field === "account") {
         const _prev = [...prev[field]];
         const updatedData = [
           ..._prev,
           { name: "", bankName: "", accountNumber: "" },
         ];
         return { ...prev, [field]: updatedData };
-      } else if (field === "parent" && Array.isArray(prev[field])) {
+      } else if (field === "parent") {
         const _prev = [...prev[field]];
         const updatedData = [..._prev, { badge: "", name: "", isAlive: false }];
         return { ...prev, [field]: updatedData };
@@ -322,27 +332,6 @@ const Order = () => {
     setWeddingDate([]);
     setOrderData((prev) => {
       return { ...prev, [field]: "" };
-    });
-  };
-
-  const handleOnclick = (
-    field: keyof OrderFormData,
-    optionKey: keyof Account | keyof Parent,
-    index: number,
-    e: React.FormEvent<HTMLElement>
-  ) => {
-    const { value } = e.currentTarget.dataset;
-    setOrderData((prev) => {
-      if (field === "parent" && Array.isArray(prev[field])) {
-        const updatedField = [...prev[field]];
-        updatedField[index] = {
-          ...updatedField[index],
-          [optionKey]: value,
-        };
-        return { ...prev, [field]: updatedField };
-      }
-
-      return prev;
     });
   };
 

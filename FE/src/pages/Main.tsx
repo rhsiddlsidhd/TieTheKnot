@@ -9,13 +9,9 @@ import {
   weddingTell,
 } from "../tests/daum/data";
 import MapSections from "../components/locations/MapSections";
-import Subway from "../components/locations/SubwaySections";
-
 import { convertToAMPM } from "../utils/dateUtils";
 import Calender from "../components/calenders/CalenderSections";
 import CountdownSections from "../components/calenders/CountdownSections";
-import CalenderSections from "../components/calenders/CalenderSections";
-
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
 import { useState } from "react";
