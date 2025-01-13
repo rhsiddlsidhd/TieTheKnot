@@ -2,7 +2,6 @@ import { Types } from "mongoose";
 import { CustomError } from "../controller/oauthController";
 import UserModel from "../models/userSchema";
 import DetailInfoModel from "../models/detailInfoSchema";
-import User from "../models/userSchema";
 
 interface UserPayload {
   _id: Types.ObjectId;
@@ -31,7 +30,7 @@ class UserService {
       if (!googleId) {
         throw new CustomError(400, `GoogleId(sub) is ${typeof googleId}`);
       }
-      const user = await User.findOne({ googleId });
+      const user = await UserModel.findOne({ googleId });
       if (!user) {
         throw new CustomError(404, "User not found");
       }

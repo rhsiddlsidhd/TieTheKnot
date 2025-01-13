@@ -89,6 +89,7 @@ const orderSchema = new Schema<OrderSchema>({
     },
     required: true,
   },
+
   isCompleted: { type: Boolean, default: false },
 });
 

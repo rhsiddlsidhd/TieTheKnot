@@ -11,5 +11,6 @@ const router = express.Router();
  */
 
 router.post("/", orderController.postWeddingOrder);
+router.get("/", orderController.getWeddingOrder);
 
 module.exports = router;

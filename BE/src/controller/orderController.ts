@@ -1,6 +1,4 @@
 import { Request, Response } from "express";
-import Account from "../models/accountSchema";
-import Parents from "../models/parentsSchema";
 import { CustomError } from "./oauthController";
 import OrderModel from "../models/orderSchema";
 import { oauthService } from "../services/oauthService";
@@ -46,8 +44,49 @@ class OrderController {
           name: error.name,
           message: error.message,
         });
+      } else if (error instanceof Error) {
+        res.json({
+          message: error.message,
+        });
       } else {
-        console.error(error);
+        res.json({
+          error,
+        });
+      }
+    }
+  };
+
+  getWeddingOrder = async (req: Request, res: Response) => {
+    /**
+     * 현재 API 조회시에는 쿠키에 토큰이 있는걸 가져와서 유저 조회해서 원하는 Order data를 가져옴 즉) 로그인을 해야 볼수있음
+     *
+     * 배포 API조회시에는 req.body로 user ID 값을 로컬에서 직접 바로 전달해서 배포 웹에는 유저 order를 볼 수 있도록 개선 ) 로그인 X 배포 사이트에서 데이터 조회해서 볼 수 있도록 해야함
+     */
+    try {
+      const infoData = await oauthService.fetchUser();
+      const { sub: googleId } = infoData;
+      const user = await userService.findUserByGoogleId(googleId);
+      const findUserOrder = await OrderModel.findOne(
+        { user: user._id },
+        "-__v -_id -user"
+      );
+      res.status(200).json({
+        findUserOrder,
+      });
+    } catch (error) {
+      if (error instanceof CustomError) {
+        res.status(error.status).json({
+          name: error.name,
+          message: error.message,
+        });
+      } else if (error instanceof Error) {
+        res.json({
+          message: error.message,
+        });
+      } else {
+        res.json({
+          error,
+        });
       }
     }
   };
