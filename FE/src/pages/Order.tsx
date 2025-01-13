@@ -147,8 +147,9 @@ const Order = () => {
     e: React.MouseEvent<HTMLButtonElement>
   ): void => {
     e.preventDefault();
+
     setOrderData((prev) => {
-      if (Array.isArray(prev[field])) return prev;
+      if (!Array.isArray(prev[field])) return prev;
       if (field === "account") {
         const _prev = [...prev[field]];
         const updatedData = [

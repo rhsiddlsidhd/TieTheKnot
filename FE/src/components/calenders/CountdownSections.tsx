@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { weddingDate } from "../../tests/calendar/data";
 import { calculateCountdown } from "../../utils/dateUtils";
+import { WeddingDataAPI } from "../../context/UserOrderDataContext";
 
 type TimeStamp = {
   days: number;
@@ -10,15 +11,20 @@ type TimeStamp = {
   seconds: number;
 };
 const CountdownSections: React.FC = () => {
-  const newDate = new Date(`${weddingDate}:00`);
-  const weddingDateSeconds = Math.floor(newDate.getTime() / 1000);
-  const currentDateSeconds = Math.floor(new Date().getTime() / 1000);
+  const value = useContext(WeddingDataAPI);
   const [countdown, setCountdown] = useState<TimeStamp>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
+  const { weddingData } = value;
+
+  const newDate = new Date(
+    `${weddingData ? weddingData.weddingDate : "0000-00-00 00:00"}`
+  );
+  const weddingDateSeconds = Math.floor(newDate.getTime() / 1000);
+  const currentDateSeconds = Math.floor(new Date().getTime() / 1000);
 
   useEffect(() => {
     const { days, hours, minutes, seconds } = calculateCountdown(

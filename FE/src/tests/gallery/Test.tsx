@@ -35,8 +35,6 @@ const Tset = () => {
     return n;
   };
 
-  console.log(toggleDropdown);
-
   const handleGalleryType = (id: string, e: React.MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
     const value = target.getAttribute("value");
@@ -44,8 +42,10 @@ const Tset = () => {
     if (value) {
       try {
         const data = JSON.parse(value);
+        console.log("data", data);
         const { quantity, type } = data;
         let convertedType = typeConvert(type);
+        console.log("c", convertedType);
         setSelectedType((prev) => ({
           ...prev,
           [id]: { quantity, type: convertedType },
@@ -97,6 +97,7 @@ const Tset = () => {
               >
                 {Object.keys(typeData).map((v, i) => {
                   const value = JSON.stringify(typeData[v]);
+                  console.log("value", value);
                   return (
                     <li key={i} value={value}>
                       {v}

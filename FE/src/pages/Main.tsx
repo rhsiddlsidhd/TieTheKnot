@@ -1,23 +1,21 @@
 import styled from "styled-components";
 import { media } from "../styles/media";
 import "../App.css";
-import { weddingDate } from "../tests/calendar/data";
-
-import {
-  weddingAddress,
-  weddingAddressDetail,
-  weddingTell,
-} from "../tests/daum/data";
+import { weddingTell } from "../tests/daum/data";
 import MapSections from "../components/locations/MapSections";
 import { convertToAMPM } from "../utils/dateUtils";
 import Calender from "../components/calenders/CalenderSections";
 import CountdownSections from "../components/calenders/CountdownSections";
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GeoProps } from "../apis/api/location/kakaoMap/types";
 import NaviSections from "../components/locations/NaviSections";
 import PrivateCarSections from "../components/locations/PrivateCarSections";
+import axios from "axios";
+import { WeddingDataAPI } from "../context/UserOrderDataContext";
+import { weddingAddress, weddingAddressDetail } from "./../tests/daum/data";
+import { OrderFormData } from "./Order";
 
 export interface WeddingDay {
   year: number;
@@ -26,7 +24,24 @@ export interface WeddingDay {
   day: number;
 }
 
+type GalleryType = {
+  [key: string]: {
+    urls: string[];
+    type: string;
+  };
+};
 const Main = () => {
+  const [galleryTypeData, setGalleryTypeData] = useState<GalleryType | null>(
+    null
+  );
+  const value = useContext(WeddingDataAPI);
+
+  const { weddingData, setWeddingData } = value;
+
+  const newDate = new Date(
+    weddingData ? weddingData.weddingDate : "0000-00-00 00:00"
+  );
+
   const [currentGeoState, setCurrentGeoState] = useState<GeoProps>({
     lng: null,
     lat: null,
@@ -35,7 +50,120 @@ const Main = () => {
     lng: null,
     lat: null,
   });
-  const newDate = new Date(weddingDate);
+
+  useEffect(() => {
+    const fetchUserOrderData = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/order`, {
+          withCredentials: true,
+        });
+        const data = res.data;
+        setWeddingData(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchUserOrderData();
+  }, [setWeddingData]);
+
+  useEffect(() => {
+    if (weddingData) {
+      transformGalleryWithType(weddingData);
+    }
+  }, [weddingData]);
+
+  if (!weddingData) {
+    return <div>로딩중...</div>;
+  }
+
+  const transformGalleryWithType = (weddingData: OrderFormData): void => {
+    const galleryType = {
+      A: {
+        quantity: 3,
+        type: [
+          ["a", "b"],
+          ["a", "c"],
+        ],
+      },
+      B: {
+        quantity: 3,
+        type: [
+          ["b", "a"],
+          ["c", "a"],
+        ],
+      },
+      C: {
+        quantity: 4,
+        type: [
+          ["a", "b"],
+          ["a", "c"],
+          ["d", "c"],
+        ],
+      },
+      D: {
+        quantity: 4,
+        type: [
+          ["a", "b"],
+          ["d", "b"],
+          ["d", "c"],
+        ],
+      },
+      E: {
+        quantity: 5,
+        type: [
+          ["a", "b"],
+          ["a", "c"],
+          ["d", "c"],
+          ["d", "e"],
+        ],
+      },
+      F: {
+        quantity: 5,
+        type: [
+          ["a", "b"],
+          ["c", "b"],
+          ["c", "d"],
+          ["e", "d"],
+        ],
+      },
+      G: {
+        quantity: 6,
+        type: [
+          ["a", "b"],
+          ["c", "d"],
+          ["c", "d"],
+          ["e", "f"],
+        ],
+      },
+    };
+
+    Object.entries(weddingData.gallery).forEach(([id, items]) => {
+      if (items.type) {
+        const type = galleryType[items.type as keyof typeof galleryType].type;
+        const convertedType = convertGridAreaType(type);
+        let result = {
+          [id]: { urls: items.urls, type: convertedType },
+        };
+
+        setGalleryTypeData((prev) => {
+          if (prev === null) {
+            return { ...result };
+          }
+          return { ...prev, ...result };
+        });
+      }
+    });
+  };
+
+  const convertGridAreaType = (s: string[][]) => {
+    let n = "";
+
+    s.forEach((v, i) => {
+      n += `"${v.join(" ")}"${"\n"}`;
+    });
+
+    return n;
+  };
 
   const weddingDay = {
     year: newDate.getFullYear(),
@@ -74,6 +202,10 @@ const Main = () => {
 
   let time = convertToAMPM(hours, minutes);
 
+  // if (!galleryTypeData) {
+  //   return <div>로딩중</div>;
+  // }
+
   return (
     <div className="App">
       <Layout>
@@ -87,17 +219,21 @@ const Main = () => {
           </SectionHeader>
           <ImgWrapper $thumnail>
             <img
-              src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
+              src={`http://localhost:8080/upload/${weddingData.thumnail[0]}`}
               alt="이미지"
             />
           </ImgWrapper>
           <DetailInfoWrapper>
             <div>
-              <span>오호호</span> 💚 <span>호호오</span>
+              {/* 신랑 신부 이름이 없네 아오 .. 일단 계좌이름으로 */}
+              <span>{weddingData.account[0].name}</span> 💚{" "}
+              <span>{weddingData.account[1].name}</span>
             </div>
             <div>
-              <span>2025년 06월 19일 토요일 오전 11시 30분</span>
-              <span>다산 프리미엄 아울렛</span>
+              <span>
+                {year}년 {month}월 {date}일{`${weekdaysOfKr[day]} ${time}`}
+              </span>
+              <span>상세정보가 없다...</span>
             </div>
           </DetailInfoWrapper>
         </WeddingInvitationContainer>
@@ -108,30 +244,51 @@ const Main = () => {
           </SectionHeader>
           <ContentWrapper>
             <div>
-              Transition words are also called connection words that are used to
-              interlink the ideas presented in one or more sentences, phrases,
-              or paragraphs to form an organized thought process.
+              결혼은 원석을 만나 그 원석을 <br />
+              나로 하여금 보석으로 만들어가는 <br />
+              과정이라고 생각한다.
             </div>
-            <p>-</p>
+
+            <p>-션 SNS 中</p>
             <div>
-              They can be used at the beginning, in the middle, or at the end of
-              a sentence or paragraph. It can be used to maintain the continuity
-              or change of ideas based on the context and tone of the text.
-            </div>
-            <div>
-              오로지 믿음과 사랑을 약속하는 날<br /> 오셔서 축복해 주시면 더
-              없는 기쁨으로
-              <br /> 간직하겠습니다.
+              서로 다른 삶은 살아온 두 사람이
+              <br /> 이제는 믿음의 결실을 맺어
+              <br /> 같은 길을 걸어가고자 합니다.
+              <br />
+              <br />
+              두 사람이 믿음의 결실을 맺는데 <br /> 소중한 분들을 모시고자
+              합니다.
+              <br />
+              <br />
+              새로운 인생을 시작하는
+              <br /> 두 사람에게
+              <br /> 귀한 걸음으로 오셔서 축복해 주신다면 <br />
+              감사하겠습니다.
             </div>
           </ContentWrapper>
           <ImgWrapper>
             <img
               className="profile"
-              src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
-              alt="이미지"
+              src={`http://localhost:8080/upload/${weddingData.thumnail[1]}`}
+              alt="이미지없음"
             />
           </ImgWrapper>
           <ContentWrapper>
+            {/* 부모님 여부 부/ 모 구분이 없다 추가해야함  */}
+            {/* {Array.isArray(weddingData.parent) &&
+            weddingData.parent.length > 0 ? (
+              weddingData.parent.map((items) => {
+                console.log(items);
+                return (
+                  <div>
+                    {items.badge === "신랑측" && <span>{items.name}</span>}
+                    <div></div>
+                  </div>
+                );
+              })
+            ) : (
+              <div></div>
+            )} */}
             <p>
               <span></span>
               <span>아버지</span>
@@ -179,23 +336,35 @@ const Main = () => {
             <p>GALLERY</p>
             <h3>우리의 순간</h3>
           </SectionHeader>
-          <GalleryWrapper>
-            <img
-              className="items item1"
-              src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
-              alt="이미지"
-            />
-            <img
-              className="items item2"
-              src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
-              alt="이미지"
-            />
-            <img
-              className="items item3"
-              src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
-              alt="이미지"
-            />
-          </GalleryWrapper>
+
+          {galleryTypeData ? (
+            Object.entries(galleryTypeData).map(([id, value], i) => {
+              const type = value.type;
+              return (
+                <GalleryWrapper key={i} id={id} $gridTemplateAreas={type}>
+                  {Array.isArray(value.urls) ? (
+                    value.urls.map((url, i) => {
+                      const letter = String.fromCharCode(97 + i);
+                      return (
+                        <img
+                          key={i}
+                          className={`items item${i + 1}`}
+                          src={`http://localhost:8080/upload/${url}`}
+                          alt="이미지"
+                          style={{ gridArea: letter }}
+                        />
+                      );
+                    })
+                  ) : (
+                    <div>로딩중</div>
+                  )}
+                </GalleryWrapper>
+              );
+            })
+          ) : (
+            <div>로딩중</div>
+          )}
+
           <CalendarWrapper>
             <h1>{`${year}.${month}.${date}`}</h1>
             <h3
@@ -211,9 +380,10 @@ const Main = () => {
             <h3>오시는 길</h3>
           </SectionHeader>
           <section>
-            <div>{weddingAddressDetail}</div>
-            <div>{weddingAddress}</div>
-            <div>{weddingTell}</div>
+            {/* 상세정보가 없다,,, */}
+            <div>상세정보가 없다 Detail</div>
+            <div>{weddingData.weddingAddress}</div>
+            <div>상세정보가 없다 Tell</div>
           </section>
           <MapSections
             currentGeoState={currentGeoState}
@@ -246,30 +416,18 @@ const CalendarWrapper = styled.div`
   margin-top: 3rem;
 `;
 
-const GalleryWrapper = styled.div`
+const GalleryWrapper = styled.div<{ $gridTemplateAreas: string }>`
   display: grid;
   width: 90%;
-
   grid-gap: 1rem;
   padding: 1rem;
-  grid-template-areas:
-    "b a"
-    "c a";
+  grid-template-areas: ${({ $gridTemplateAreas }) => $gridTemplateAreas};
   border-radius: 0.5rem;
   & > .items {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 0.5rem;
-  }
-  & > .item1 {
-    grid-area: a;
-  }
-  & > .item2 {
-    grid-area: b;
-  }
-  & > .item3 {
-    grid-area: c;
   }
 `;
 

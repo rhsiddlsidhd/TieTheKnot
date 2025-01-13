@@ -1,3 +1,4 @@
+import { Outlet } from "react-router";
 import useAuthSuccessRedirect from "../hooks/useAuthSuccessRedirect";
 
 const Login = () => {
@@ -18,6 +19,7 @@ const Login = () => {
       <button onClick={handleGoogleAuth} style={{ padding: "1rem" }}>
         google
       </button>
+      <Outlet />
     </div>
   );
 };

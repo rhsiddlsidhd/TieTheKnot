@@ -9,7 +9,7 @@ interface CalenderProps {
 }
 
 const CalenderSections = ({ weddingDay, weekdaysOfKr }: CalenderProps) => {
-  const { year, month, date, day } = weddingDay;
+  const { year, month, date } = weddingDay;
   let dayArr = getDayOfMonth(year, month);
   return (
     <CalendarSection>
