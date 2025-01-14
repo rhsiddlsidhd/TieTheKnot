@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import styled from "styled-components";
 import { GeoProps } from "../../apis/api/location/kakaoMap/types";
 import { Map, MapMarker, useKakaoLoader } from "react-kakao-maps-sdk";
@@ -6,9 +6,8 @@ import {
   getCoordinates,
   getCurrentCoordinates,
 } from "../../apis/api/location/kakaoMap/getCoordinates";
-import { weddingAddress } from "../../tests/daum/data";
 import { BtnWrapper } from "../../pages/Main";
-import NaviSections from "./NaviSections";
+import { WeddingDataAPI } from "../../context/UserOrderDataContext";
 interface MapSectionsProps {
   currentGeoState: GeoProps;
   geoState: GeoProps;
@@ -17,11 +16,13 @@ interface MapSectionsProps {
 }
 
 const MapSections = ({
-  currentGeoState,
   geoState,
   setCurrentGeoState,
   setGeoState,
 }: MapSectionsProps) => {
+  const value = useContext(WeddingDataAPI);
+
+  const { weddingData } = value;
   const [loading] = useKakaoLoader({
     appkey: `${process.env.REACT_APP_KAKAO_MAP_API_KEY}`,
   });
@@ -41,21 +42,27 @@ const MapSections = ({
   }, [setCurrentGeoState]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (address: string) => {
       try {
-        const data = await getCoordinates(weddingAddress);
-        if (data) {
-          setGeoState({
-            lng: Number(data.x),
-            lat: Number(data.y),
-          });
+        if (address) {
+          const data = await getCoordinates(address);
+          if (data) {
+            setGeoState({
+              lng: Number(data.x),
+              lat: Number(data.y),
+            });
+          }
         }
       } catch (e) {
         console.error(e);
       }
     };
-    fetchData();
-  }, [setGeoState]);
+    fetchData(weddingData ? weddingData.weddingAddress : "");
+  }, [setGeoState, weddingData]);
+
+  if (!weddingData) {
+    return <div>로딩중</div>;
+  }
 
   return (
     <>
@@ -90,6 +97,7 @@ const MapSections = ({
 export default MapSections;
 
 const MapSection = styled.div`
+  margin-top: 3rem;
   width: 100%;
   display: flex;
   flex-direction: column;

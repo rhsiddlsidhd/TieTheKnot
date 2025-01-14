@@ -30,7 +30,7 @@ const SubwaySections = () => {
       try {
         const [allStation, selectedStation] = await Promise.all([
           getAllSubwayStationApi(),
-          getSelectedSubwayStation("다산"),
+          getSelectedSubwayStation("진접"),
         ]);
         setAllLineColors(setLineColors(allStation));
         setStationLines(filterStationLines(selectedStation));

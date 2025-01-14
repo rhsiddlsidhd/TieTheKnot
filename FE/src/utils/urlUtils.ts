@@ -6,6 +6,9 @@ export const createMaxLengthUrls = (type: string): number => {
     B: 3,
     C: 4,
     D: 4,
+    E: 5,
+    F: 5,
+    G: 6,
   };
   return maxUrls[type];
 };

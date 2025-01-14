@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import { weddingDate } from "../../tests/calendar/data";
+
 import { calculateCountdown } from "../../utils/dateUtils";
 import { WeddingDataAPI } from "../../context/UserOrderDataContext";
 
@@ -23,6 +23,7 @@ const CountdownSections: React.FC = () => {
   const newDate = new Date(
     `${weddingData ? weddingData.weddingDate : "0000-00-00 00:00"}`
   );
+
   const weddingDateSeconds = Math.floor(newDate.getTime() / 1000);
   const currentDateSeconds = Math.floor(new Date().getTime() / 1000);
 
@@ -38,7 +39,7 @@ const CountdownSections: React.FC = () => {
   }, [weddingDateSeconds, currentDateSeconds]);
 
   const { days, hours, minutes } = countdown;
-
+  // console.log(days);
   return (
     <CountdonwContainer>
       <section>

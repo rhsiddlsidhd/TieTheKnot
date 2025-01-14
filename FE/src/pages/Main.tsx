@@ -14,13 +14,14 @@ import PrivateCarSections from "../components/locations/PrivateCarSections";
 import axios from "axios";
 import { WeddingDataAPI } from "../context/UserOrderDataContext";
 import { OrderFormData } from "./Order";
+import GuestBook from "../components/guestbook/GuestBook";
 
 /**
  * 데이터 수정
  *
- * 1) 기존주소 += 상세주소
- * 2) 신랑 성함 + 신부 성함
- * 3) 부모님 여부 부/ 모 구분이 X => 기존 태그 / 신랑측 신부측 => 신랑측 부 , 신랑측 모, 신부측 부, 신부측 모
+ * 1) 기존주소 += 상세주소 ( BE 완,FE완)
+ * 2) 신랑 성함 + 신부 성함 ( BE 완,FE완완)
+ * 3) 부모님 여부 부/ 모 구분이 X => 기존 태그 / 신랑측 신부측 => 신랑측 부 , 신랑측 모, 신부측 부, 신부측 모 (BE,FE완)
  */
 export interface WeddingDay {
   year: number;
@@ -240,7 +241,7 @@ const Main = () => {
               <span>
                 {year}년 {month}월 {date}일{`${weekdaysOfKr[day]} ${time}`}
               </span>
-              <span>상세정보가 없다...</span>
+              <span>{weddingData.weddingAddressDetail}</span>
             </div>
           </DetailInfoWrapper>
         </WeddingInvitationContainer>
@@ -327,7 +328,7 @@ const Main = () => {
           <ImgWrapper>
             <img
               className="profile"
-              src={`${process.env.REACT_APP_IMAGE_BASE_URL}/married.jpg`}
+              src={`http://localhost:8080/upload/${weddingData.thumnail[0]}`}
               alt="이미지"
             />
           </ImgWrapper>
@@ -343,7 +344,6 @@ const Main = () => {
             <p>GALLERY</p>
             <h3>우리의 순간</h3>
           </SectionHeader>
-
           {galleryTypeData ? (
             Object.entries(galleryTypeData).map(([id, value], i) => {
               const type = value.type;
@@ -387,10 +387,8 @@ const Main = () => {
             <h3>오시는 길</h3>
           </SectionHeader>
           <section>
-            {/* 상세정보가 없다,,, */}
-            <div>상세정보가 없다 Detail</div>
+            <div>{weddingData.weddingAddressDetail}</div>
             <div>{weddingData.weddingAddress}</div>
-            <div>상세정보가 없다 Tell</div>
           </section>
           <MapSections
             currentGeoState={currentGeoState}
@@ -403,12 +401,8 @@ const Main = () => {
           <BusSections geoState={geoState} />
           <PrivateCarSections />
         </WeddingInvitationContainer>
-        <WeddingInvitationContainer>
-          <SectionHeader>
-            <p>GusetBook</p>
-            <h3>방명록 </h3>
-          </SectionHeader>
-        </WeddingInvitationContainer>
+
+        <GuestBook />
       </Layout>
     </div>
   );

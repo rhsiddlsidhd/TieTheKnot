@@ -29,8 +29,15 @@ export interface Parent {
   isDeceased: boolean;
 }
 
+interface Name {
+  groom: string;
+  bride: string;
+}
+
 export interface OrderFormData {
+  name: Name;
   weddingAddress: string;
+  weddingAddressDetail: string;
   weddingDate: string;
   account: Account[];
   parent: Parent[];
@@ -38,17 +45,21 @@ export interface OrderFormData {
   gallery: Gallery;
 }
 
+type Badge = "default" | "신랑측 부" | "신랑측 모" | "신부측 부" | "신부측 모";
+
 const Order = () => {
   useAuthFailRedirect();
 
   const navigate = useNavigate();
-  const badge = ["신랑측", "신부측"];
-  const galleryType = ["A", "B", "C", "D"];
+  const badge = ["신랑측 부", "신랑측 모", "신부측 부", "신부측 모"];
+  const galleryType = ["A", "B", "C", "D", "E", "F", "G"];
   const [error, setError] = useState<string>("");
   const [checkBox, setCheckBox] = useState<string[]>([]);
   const [weddingDate, setWeddingDate] = useState<string[]>([]);
   const [orderData, setOrderData] = useState<OrderFormData>({
+    name: { groom: "", bride: "" },
     weddingAddress: "",
+    weddingAddressDetail: "",
     weddingDate: "",
     account: [],
     parent: [],
@@ -102,12 +113,40 @@ const Order = () => {
     }
   };
 
+  const handleTextOnChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fields?: string
+  ) => {
+    e.preventDefault();
+    const value = e.target.value;
+
+    if (!fields) {
+      setOrderData((prev) => ({
+        ...prev,
+        weddingAddressDetail: value,
+      }));
+    } else {
+      //중첩객체에 깊이 들어갈때 keyof 타입 확정에 대해 어려움을 겪는다 하오..
+      //부족함이 너무많다 하ㅏㅏㅏㅏ
+
+      setOrderData((prev) => {
+        const fieldArray = fields.split(".");
+        const lastField = fieldArray.pop();
+        if (lastField === "groom" || lastField === "bride") {
+          return { ...prev, name: { ...prev.name, [lastField]: value } };
+        }
+        return prev;
+      });
+    }
+  };
+
   const handleOnchange = (
     field: keyof OrderFormData,
     optionKey: keyof Account | keyof Parent,
     index: number,
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
+    e.preventDefault();
     const { checked, value, type } = e.target;
     setOrderData((prev) => {
       if (field === "account") {
@@ -133,6 +172,7 @@ const Order = () => {
     index: number,
     e: React.FormEvent<HTMLElement>
   ) => {
+    e.preventDefault();
     const { value } = e.currentTarget.dataset;
     setOrderData((prev) => {
       if (!Array.isArray(prev[field])) return prev;
@@ -174,6 +214,7 @@ const Order = () => {
     field: string,
     e: React.ChangeEvent<HTMLInputElement>
   ): Promise<void> => {
+    e.preventDefault();
     try {
       const files = e.target.files;
       if (files) {
@@ -207,6 +248,7 @@ const Order = () => {
     galleryId: string,
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
+    e.preventDefault();
     const files = e.target.files;
 
     if (files) {
@@ -265,7 +307,9 @@ const Order = () => {
   };
 
   const handleSelectedType: React.MouseEventHandler<HTMLLIElement> = (e) => {
+    e.preventDefault();
     const type = e.currentTarget.dataset.value;
+
     const gallery = e.currentTarget.className;
 
     if (type && gallery) {
@@ -340,6 +384,12 @@ const Order = () => {
     });
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Enter 키 눌렀을 때 form 제출 방지
+    }
+  };
+
   return (
     <Container>
       <Form
@@ -347,13 +397,51 @@ const Order = () => {
           handleSubmitOrder(orderData, e, () => navigate("/register"))
         }
       >
-        <div>주소</div>
-        <UseDaumPostcodePopup
-          setOrderData={setOrderData}
-          setError={setError}
-          orderData={orderData}
-        />
+        <NameWrapper>
+          <legend>웨딩 주인공 성함</legend>
+          <div>
+            <label htmlFor="groom-name">신랑</label>
+            <input
+              id="groom-name"
+              type="text"
+              placeholder="신랑 성함"
+              onChange={(e) => handleTextOnChange(e, "name.groom")}
+              onKeyDown={handleKeyPress}
+            />
+          </div>
+          <div>
+            <label htmlFor="bride-name">신부</label>
+            <input
+              id="bride-name"
+              type="text"
+              placeholder="신부 성함"
+              onChange={(e) => handleTextOnChange(e, "name.bride")}
+              onKeyDown={handleKeyPress}
+            />
+          </div>
+        </NameWrapper>
+        <Address>
+          <legend>웨딩홀 주소</legend>
+          <div>
+            <div>주소</div>
+            <UseDaumPostcodePopup
+              setOrderData={setOrderData}
+              setError={setError}
+              orderData={orderData}
+            />
+          </div>
+          <div>
+            <div style={{ height: "100%" }}>상세주소</div>
+            <input
+              placeholder="상세주소"
+              type="text"
+              onChange={(e) => handleTextOnChange(e)}
+              onKeyDown={handleKeyPress}
+            />
+          </div>
+        </Address>
         <WeddingDate>
+          <legend>웨딩 날짜</legend>
           <div>
             날짜{" "}
             <span>
@@ -375,10 +463,16 @@ const Order = () => {
             id="timeInput"
           />
           <br />
-          <input readOnly type="text" value={weddingDate} />
+          <input
+            readOnly
+            type="text"
+            value={weddingDate}
+            onKeyDown={handleKeyPress}
+          />
         </WeddingDate>
         <AccountWrapper>
-          <button onClick={(e) => addOptionField("account", e)}>
+          <legend>계좌 (선택)</legend>
+          <button type="button" onClick={(e) => addOptionField("account", e)}>
             {" "}
             계좌 추가
           </button>
@@ -392,6 +486,7 @@ const Order = () => {
                     onChange={(e) =>
                       handleOnchange("account", "name", index, e)
                     }
+                    onKeyDown={handleKeyPress}
                   />
                   <input
                     type="text"
@@ -399,6 +494,7 @@ const Order = () => {
                     onChange={(e) =>
                       handleOnchange("account", "bankName", index, e)
                     }
+                    onKeyDown={handleKeyPress}
                   />
                   <input
                     type="text"
@@ -406,6 +502,7 @@ const Order = () => {
                     onChange={(e) =>
                       handleOnchange("account", "accountNumber", index, e)
                     }
+                    onKeyDown={handleKeyPress}
                   />
                 </li>
               );
@@ -413,20 +510,22 @@ const Order = () => {
           </ul>
         </AccountWrapper>
         <AccountWrapper>
-          <button onClick={(e) => addOptionField("parent", e)}>혼주</button>
-          {orderData.parent.map((_, index) => {
+          <legend>혼주 (선택)</legend>
+          <button type="button" onClick={(e) => addOptionField("parent", e)}>
+            혼주
+          </button>
+          {orderData.parent.map((items, index) => {
             const badgeBgColors = {
               default: "#6c757d",
-              groomSide: "#0dcaf0",
-              other: "#FFC107",
+              "신랑측 부": "#0dcaf0",
+              "신랑측 모": "#EFB6C8",
+              "신부측 부": "#5CB338",
+              "신부측 모": "#FFC107",
             };
 
             const badgeBgColor =
-              orderData.parent[index].badge === ""
-                ? badgeBgColors.default
-                : orderData.parent[index].badge === "신랑측"
-                ? badgeBgColors.groomSide
-                : badgeBgColors.other;
+              badgeBgColors[items.badge as Badge] || badgeBgColors.default;
+
             const badgeColor =
               orderData.parent[index].badge === "" ? "#e3e5e6" : "#02181c";
             return (
@@ -441,22 +540,36 @@ const Order = () => {
                       : "태그"}
                   </div>
                   <ul>
-                    {badge.map((item, i) => {
-                      const badgeColor = ["#0dcaf0", "#FFC107"];
-
-                      return (
-                        <li
-                          style={{ backgroundColor: badgeColor[i] }}
-                          data-value={item}
-                          key={i}
-                          onClick={(e) =>
-                            handleOnclick("parent", "badge", index, e)
-                          }
-                        >
-                          {item}
-                        </li>
-                      );
-                    })}
+                    {badge
+                      .filter((item) => {
+                        return !orderData.parent.some(
+                          (parentItem) => parentItem.badge === item
+                        );
+                      })
+                      .map((item, i) => {
+                        const badgeBgColors = {
+                          default: "#6c757d",
+                          "신랑측 부": "#0dcaf0",
+                          "신랑측 모": "#EFB6C8",
+                          "신부측 부": "#5CB338",
+                          "신부측 모": "#FFC107",
+                        };
+                        console.log(item);
+                        const badgeBgColor =
+                          badgeBgColors[item as Badge] || badgeBgColors.default;
+                        return (
+                          <li
+                            style={{ backgroundColor: badgeBgColor }}
+                            data-value={item}
+                            key={i}
+                            onClick={(e) =>
+                              handleOnclick("parent", "badge", index, e)
+                            }
+                          >
+                            {item}
+                          </li>
+                        );
+                      })}
                   </ul>
                 </BadgeDropdown>
                 <InputTextWrapper>
@@ -470,81 +583,85 @@ const Order = () => {
                     type="text"
                     placeholder="성함"
                     onChange={(e) => handleOnchange("parent", "name", index, e)}
+                    onKeyDown={handleKeyPress}
                   />
                 </InputTextWrapper>
               </ParentsItems>
             );
           })}
         </AccountWrapper>
-
-        <div>썸네일</div>
-        <button onClick={(e) => handleThumnailReset("thumnail", e)}>
-          썸네일 이미지 초기화
-        </button>
-        <br />
-        <input type="file" onChange={(e) => handleImgUrl("thumnail", e)} />
-        {orderData.thumnail.map((v: string, i: number) => {
-          return <div key={i}>{v}</div>;
-        })}
-        <div>갤러리</div>
-        {/* 갤러리 하단에서 타입을 선택 => 타입을 선택하면 지정된 개수를 선택할수 있는 input type file 이 생성 */}
-        <GalleryTypeDropdown>
-          <div>타입선택</div>
-          <ul>
-            {galleryType.map((type: string, i: number) => {
-              return (
-                <li
-                  key={i}
-                  data-value={type}
-                  className="gallery"
-                  onClick={(e) => handleSelectedType(e)}
-                >
-                  {type} {createMaxLengthUrls(type)}
-                </li>
-              );
-            })}
-          </ul>
-        </GalleryTypeDropdown>
-        <div style={{ display: "flex" }}>
-          <div style={{ marginRight: "1rem" }}>갤러리 선택</div>
-          <button
-            onClick={(e) =>
-              handleGalleryDelete(orderData["gallery"], checkBox, e)
-            }
-          >
-            DELETE
+        <ThumnailWrapper>
+          <legend>썸네일</legend>
+          <button onClick={(e) => handleThumnailReset("thumnail", e)}>
+            썸네일 이미지 초기화
           </button>
-        </div>
-        <GalleryContainer>
-          {Object.keys(orderData["gallery"]).map(
-            (galleryId: string, i: number) => {
-              const { type } = orderData["gallery"][galleryId];
-              return (
-                <GalleryWrapper key={i}>
-                  <label>
-                    <input
-                      id={galleryId}
-                      type="checkbox"
-                      checked={checkBox.includes(galleryId)}
-                      onChange={(e) => handleCheckbox(e)}
-                    />
-                  </label>
-                  <div>
+          <br />
+          <input type="file" onChange={(e) => handleImgUrl("thumnail", e)} />
+          {orderData.thumnail.map((v: string, i: number) => {
+            return <div key={i}>{v}</div>;
+          })}
+        </ThumnailWrapper>
+        <GalleryWrapper>
+          <legend>갤러리</legend>
+          {/* 갤러리 하단에서 타입을 선택 => 타입을 선택하면 지정된 개수를 선택할수 있는 input type file 이 생성 */}
+          <GalleryTypeDropdown>
+            <div>타입선택</div>
+            <ul>
+              {galleryType.map((type: string, i: number) => {
+                return (
+                  <li
+                    key={i}
+                    data-value={type}
+                    className="gallery"
+                    onClick={(e) => handleSelectedType(e)}
+                  >
+                    {type} {createMaxLengthUrls(type)}
+                  </li>
+                );
+              })}
+            </ul>
+          </GalleryTypeDropdown>
+          <div style={{ display: "flex" }}>
+            <div style={{ marginRight: "1rem" }}>갤러리 선택</div>
+            <button
+              onClick={(e) =>
+                handleGalleryDelete(orderData["gallery"], checkBox, e)
+              }
+            >
+              DELETE
+            </button>
+          </div>
+          <TypeOptionsContainer>
+            {Object.keys(orderData["gallery"]).map(
+              (galleryId: string, i: number) => {
+                const { type } = orderData["gallery"][galleryId];
+                return (
+                  <TypeOptionsList key={i}>
+                    <label>
+                      <input
+                        id={galleryId}
+                        type="checkbox"
+                        checked={checkBox.includes(galleryId)}
+                        onChange={(e) => handleCheckbox(e)}
+                      />
+                    </label>
                     <div>
-                      {type} 타입 {createMaxLengthUrls(type)}장
+                      <div>
+                        {type} 타입 {createMaxLengthUrls(type)}장
+                      </div>
+                      <input
+                        type="file"
+                        onChange={(e) =>
+                          handleGalleryImageUpload("gallery", galleryId, e)
+                        }
+                      />
                     </div>
-                    <input
-                      type="file"
-                      onChange={(e) =>
-                        handleGalleryImageUpload("gallery", galleryId, e)
-                      }
-                    />
-                  </div>
-                </GalleryWrapper>
-              );
-            }
-          )}
-        </GalleryContainer>
+                  </TypeOptionsList>
+                );
+              }
+            )}
+          </TypeOptionsContainer>
+        </GalleryWrapper>
         <div style={{ display: "flex" }}>
           <button type="submit">제출</button>
           <ErrorSpan style={{ marginLeft: "1rem" }}>{error}</ErrorSpan>
@@ -617,7 +734,7 @@ const BadgeDropdown = styled.div<{
   }
 `;
 
-const AccountWrapper = styled.div`
+const AccountWrapper = styled.fieldset`
   margin: 1rem 0;
   & > ul {
     list-style: none;
@@ -651,14 +768,14 @@ const GalleryTypeDropdown = styled.div`
   }
 `;
 
-const GalleryContainer = styled.div`
+const TypeOptionsContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
   width: fit-content;
 `;
 
-const GalleryWrapper = styled.div`
+const TypeOptionsList = styled.div`
   display: flex;
   align-items: center;
   & > label {
@@ -682,4 +799,25 @@ const Container = styled.div`
   height: 100vh;
 `;
 
-const WeddingDate = styled.div``;
+const WeddingDate = styled.fieldset``;
+
+const Address = styled.fieldset`
+  display: flex;
+  & > div:last-child {
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+const NameWrapper = styled.fieldset`
+  display: flex;
+
+  & > div {
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+const ThumnailWrapper = styled.fieldset``;
+
+const GalleryWrapper = styled.fieldset``;
