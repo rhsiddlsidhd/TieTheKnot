@@ -66,13 +66,11 @@ class OrderController {
       const infoData = await oauthService.fetchUser();
       const { sub: googleId } = infoData;
       const user = await userService.findUserByGoogleId(googleId);
-      const findUserOrder = await OrderModel.findOne(
+      const data = await OrderModel.findOne(
         { user: user._id },
         "-__v -_id -user"
       );
-      res.status(200).json({
-        findUserOrder,
-      });
+      res.status(200).json(data);
     } catch (error) {
       if (error instanceof CustomError) {
         res.status(error.status).json({

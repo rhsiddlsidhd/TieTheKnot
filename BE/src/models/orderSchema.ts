@@ -15,7 +15,7 @@ interface Account {
 
 interface parent {
   name: string;
-  isAlive: boolean;
+  isDeceased: boolean;
 }
 
 export interface OrderSchema {
@@ -65,7 +65,7 @@ const orderSchema = new Schema<OrderSchema>({
           type: String,
           required: true,
         },
-        isAlive: {
+        isDeceased: {
           type: Boolean,
           required: true,
         },

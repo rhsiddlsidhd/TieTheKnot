@@ -35,6 +35,7 @@ const env = load({
 });
 app.use(cookieparser());
 app.use(cors(corsOptions));
+app.use("/upload", express.static(path.join(__dirname, "upload")));
 app.use(
   session({
     secret: "keyboard cat",

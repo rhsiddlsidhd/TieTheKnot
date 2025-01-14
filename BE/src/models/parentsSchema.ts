@@ -10,7 +10,7 @@ interface ParentsSchema {
       type: string;
     };
   };
-  isAlive: {
+  isDeceased: {
     father: {
       type: boolean;
     };
@@ -29,7 +29,7 @@ const parentsSchema = new Schema<ParentsSchema>({
       type: String,
     },
   },
-  isAlive: {
+  isDeceased: {
     father: {
       type: Boolean,
     },
