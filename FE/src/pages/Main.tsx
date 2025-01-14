@@ -1,22 +1,27 @@
 import styled from "styled-components";
 import { media } from "../styles/media";
 import "../App.css";
-import { weddingTell } from "../tests/daum/data";
 import MapSections from "../components/locations/MapSections";
 import { convertToAMPM } from "../utils/dateUtils";
 import Calender from "../components/calenders/CalenderSections";
 import CountdownSections from "../components/calenders/CountdownSections";
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { GeoProps } from "../apis/api/location/kakaoMap/types";
 import NaviSections from "../components/locations/NaviSections";
 import PrivateCarSections from "../components/locations/PrivateCarSections";
 import axios from "axios";
 import { WeddingDataAPI } from "../context/UserOrderDataContext";
-import { weddingAddress, weddingAddressDetail } from "./../tests/daum/data";
 import { OrderFormData } from "./Order";
 
+/**
+ * 데이터 수정
+ *
+ * 1) 기존주소 += 상세주소
+ * 2) 신랑 성함 + 신부 성함
+ * 3) 부모님 여부 부/ 모 구분이 X => 기존 태그 / 신랑측 신부측 => 신랑측 부 , 신랑측 모, 신부측 부, 신부측 모
+ */
 export interface WeddingDay {
   year: number;
   month: number;
@@ -66,95 +71,6 @@ const Main = () => {
     fetchUserOrderData();
   }, [setWeddingData]);
 
-  useEffect(() => {
-    if (weddingData) {
-      transformGalleryWithType(weddingData);
-    }
-  }, [weddingData]);
-
-  if (!weddingData) {
-    return <div>로딩중...</div>;
-  }
-
-  const transformGalleryWithType = (weddingData: OrderFormData): void => {
-    const galleryType = {
-      A: {
-        quantity: 3,
-        type: [
-          ["a", "b"],
-          ["a", "c"],
-        ],
-      },
-      B: {
-        quantity: 3,
-        type: [
-          ["b", "a"],
-          ["c", "a"],
-        ],
-      },
-      C: {
-        quantity: 4,
-        type: [
-          ["a", "b"],
-          ["a", "c"],
-          ["d", "c"],
-        ],
-      },
-      D: {
-        quantity: 4,
-        type: [
-          ["a", "b"],
-          ["d", "b"],
-          ["d", "c"],
-        ],
-      },
-      E: {
-        quantity: 5,
-        type: [
-          ["a", "b"],
-          ["a", "c"],
-          ["d", "c"],
-          ["d", "e"],
-        ],
-      },
-      F: {
-        quantity: 5,
-        type: [
-          ["a", "b"],
-          ["c", "b"],
-          ["c", "d"],
-          ["e", "d"],
-        ],
-      },
-      G: {
-        quantity: 6,
-        type: [
-          ["a", "b"],
-          ["c", "d"],
-          ["c", "d"],
-          ["e", "f"],
-        ],
-      },
-    };
-
-    Object.entries(weddingData.gallery).forEach(([id, items]) => {
-      if (items.type) {
-        const type = galleryType[items.type as keyof typeof galleryType].type;
-        const convertedType = convertGridAreaType(type);
-        let result = {
-          [id]: { urls: items.urls, type: convertedType },
-        };
-
-        setGalleryTypeData((prev) => {
-          if (prev === null) {
-            return { ...result };
-          }
-          return { ...prev, ...result };
-        });
-      }
-    });
-  };
-
   const convertGridAreaType = (s: string[][]) => {
     let n = "";
 
@@ -164,6 +80,97 @@ const Main = () => {
 
     return n;
   };
+  const transformGalleryWithType = useCallback(
+    (weddingData: OrderFormData): void => {
+      const galleryType = {
+        A: {
+          quantity: 3,
+          type: [
+            ["a", "b"],
+            ["a", "c"],
+          ],
+        },
+        B: {
+          quantity: 3,
+          type: [
+            ["b", "a"],
+            ["c", "a"],
+          ],
+        },
+        C: {
+          quantity: 4,
+          type: [
+            ["a", "b"],
+            ["a", "c"],
+            ["d", "c"],
+          ],
+        },
+        D: {
+          quantity: 4,
+          type: [
+            ["a", "b"],
+            ["d", "b"],
+            ["d", "c"],
+          ],
+        },
+        E: {
+          quantity: 5,
+          type: [
+            ["a", "b"],
+            ["a", "c"],
+            ["d", "c"],
+            ["d", "e"],
+          ],
+        },
+        F: {
+          quantity: 5,
+          type: [
+            ["a", "b"],
+            ["c", "b"],
+            ["c", "d"],
+            ["e", "d"],
+          ],
+        },
+        G: {
+          quantity: 6,
+          type: [
+            ["a", "b"],
+            ["c", "d"],
+            ["c", "d"],
+            ["e", "f"],
+          ],
+        },
+      };
+
+      Object.entries(weddingData.gallery).forEach(([id, items]) => {
+        if (items.type) {
+          const type = galleryType[items.type as keyof typeof galleryType].type;
+          const convertedType = convertGridAreaType(type);
+          let result = {
+            [id]: { urls: items.urls, type: convertedType },
+          };
+
+          setGalleryTypeData((prev) => {
+            if (prev === null) {
+              return { ...result };
+            }
+            return { ...prev, ...result };
+          });
+        }
+      });
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (weddingData) {
+      transformGalleryWithType(weddingData);
+    }
+  }, [weddingData, transformGalleryWithType]);
+
+  if (!weddingData) {
+    return <div>로딩중...</div>;
+  }
 
   const weddingDay = {
     year: newDate.getFullYear(),

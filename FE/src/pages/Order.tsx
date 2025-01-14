@@ -26,7 +26,7 @@ export interface Account {
 export interface Parent {
   badge: string;
   name: string;
-  isAlive: boolean; //추후에 데이터명 수정 ===> isDeceased
+  isDeceased: boolean;
 }
 
 export interface OrderFormData {
@@ -40,6 +40,7 @@ export interface OrderFormData {
 
 const Order = () => {
   useAuthFailRedirect();
+
   const navigate = useNavigate();
   const badge = ["신랑측", "신부측"];
   const galleryType = ["A", "B", "C", "D"];
@@ -159,7 +160,10 @@ const Order = () => {
         return { ...prev, [field]: updatedData };
       } else if (field === "parent") {
         const _prev = [...prev[field]];
-        const updatedData = [..._prev, { badge: "", name: "", isAlive: false }];
+        const updatedData = [
+          ..._prev,
+          { badge: "", name: "", isDeceased: false },
+        ];
         return { ...prev, [field]: updatedData };
       }
       return prev;
@@ -459,7 +463,7 @@ const Order = () => {
                   <input
                     type="checkbox"
                     onChange={(e) =>
-                      handleOnchange("parent", "isAlive", index, e)
+                      handleOnchange("parent", "isDeceased", index, e)
                     }
                   />
                   <input
