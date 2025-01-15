@@ -8,16 +8,25 @@ class OrderService {
         throw new CustomError(400, "req.body is undefined");
       }
       const {
+        name,
         weddingAddress,
         weddingDate,
+        weddingAddressDetail,
         account,
         parent,
         thumnail,
         gallery,
       } = data;
 
+      if (!name) {
+        throw new CustomError(400, `신랑, 신부 성함은 필수 입력입니다.`);
+      }
       if (!weddingAddress) {
         throw new CustomError(400, `웨딩홀 주소는 필수 입력입니다.`);
+      }
+
+      if (!weddingAddressDetail) {
+        throw new CustomError(400, `웨딩홀 상세 주소는 필수 입력입니다.`);
       }
 
       if (!weddingDate) {

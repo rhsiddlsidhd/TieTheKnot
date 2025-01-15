@@ -7,6 +7,11 @@ interface Gallery {
   };
 }
 
+interface Name {
+  groom: string;
+  bride: string;
+}
+
 interface Account {
   name: string;
   bankName: string;
@@ -20,7 +25,9 @@ interface parent {
 
 export interface OrderSchema {
   user: Types.ObjectId;
+  name: Name;
   weddingAddress: string;
+  weddingAddressDetail: string;
   weddingDate: string;
   account: Account[];
   parent: parent[];
@@ -36,7 +43,22 @@ const orderSchema = new Schema<OrderSchema>({
     required: true,
     ref: "User",
   },
+  name: {
+    type: {
+      groom: {
+        type: String,
+      },
+      bride: {
+        type: String,
+      },
+    },
+    required: true,
+  },
   weddingAddress: {
+    type: String,
+    required: true,
+  },
+  weddingAddressDetail: {
     type: String,
     required: true,
   },

@@ -11,7 +11,9 @@ class OrderController {
       const data = req.body;
 
       const {
+        name,
         weddingAddress,
+        weddingAddressDetail,
         weddingDate,
         account,
         parent,
@@ -25,7 +27,9 @@ class OrderController {
 
       const newData = new OrderModel({
         user: user._id,
+        name,
         weddingAddress,
+        weddingAddressDetail,
         weddingDate,
         account: account.length === 0 ? null : account,
         parent: parent.length === 0 ? null : parent,
@@ -62,14 +66,15 @@ class OrderController {
      *
      * 배포 API조회시에는 req.body로 user ID 값을 로컬에서 직접 바로 전달해서 배포 웹에는 유저 order를 볼 수 있도록 개선 ) 로그인 X 배포 사이트에서 데이터 조회해서 볼 수 있도록 해야함
      */
+
+    //방명록이 누구의 방명록인지 확인하기 위해
+    //청첩장 ID 를 Data와 함께 전달해야함 _id
+
     try {
       const infoData = await oauthService.fetchUser();
       const { sub: googleId } = infoData;
       const user = await userService.findUserByGoogleId(googleId);
-      const data = await OrderModel.findOne(
-        { user: user._id },
-        "-__v -_id -user"
-      );
+      const data = await OrderModel.findOne({ user: user._id }, "-__v -user");
       res.status(200).json(data);
     } catch (error) {
       if (error instanceof CustomError) {
