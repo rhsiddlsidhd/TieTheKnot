@@ -57,6 +57,7 @@ const Main = () => {
     lat: null,
   });
 
+  console.log(weddingData);
   useEffect(() => {
     const fetchUserOrderData = async () => {
       try {
@@ -371,7 +372,6 @@ const Main = () => {
           ) : (
             <div>로딩중</div>
           )}
-
           <CalendarWrapper>
             <h1>{`${year}.${month}.${date}`}</h1>
             <h3

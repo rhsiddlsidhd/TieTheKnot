@@ -398,7 +398,7 @@ const Order = () => {
         }
       >
         <NameWrapper>
-          <legend>웨딩 주인공 성함</legend>
+          <h4>웨딩 주인공 성함</h4>
           <div>
             <label htmlFor="groom-name">신랑</label>
             <input
@@ -408,8 +408,6 @@ const Order = () => {
               onChange={(e) => handleTextOnChange(e, "name.groom")}
               onKeyDown={handleKeyPress}
             />
-          </div>
-          <div>
             <label htmlFor="bride-name">신부</label>
             <input
               id="bride-name"
@@ -420,38 +418,38 @@ const Order = () => {
             />
           </div>
         </NameWrapper>
-        <Address>
-          <legend>웨딩홀 주소</legend>
+        <AddressWrapper>
+          <h4>웨딩홀 주소</h4>
           <div>
-            <div>주소</div>
             <UseDaumPostcodePopup
               setOrderData={setOrderData}
               setError={setError}
               orderData={orderData}
             />
+            <div>
+              <label htmlFor="address_detail">상세주소</label>
+              <input
+                id="address_detail"
+                placeholder="상세주소"
+                type="text"
+                onChange={(e) => handleTextOnChange(e)}
+                onKeyDown={handleKeyPress}
+                style={{
+                  minWidth: `${orderData["weddingAddressDetail"].length}em`,
+                }}
+              />
+            </div>
           </div>
-          <div>
-            <div style={{ height: "100%" }}>상세주소</div>
-            <input
-              placeholder="상세주소"
-              type="text"
-              onChange={(e) => handleTextOnChange(e)}
-              onKeyDown={handleKeyPress}
-            />
-          </div>
-        </Address>
+        </AddressWrapper>
         <WeddingDate>
-          <legend>웨딩 날짜</legend>
+          <h4>웨딩 날짜</h4>
           <div>
-            날짜{" "}
-            <span>
-              <button
-                type="button"
-                onClick={() => weddingDateReset("weddingDate")}
-              >
-                날짜 초기화
-              </button>
-            </span>
+            <button
+              type="button"
+              onClick={() => weddingDateReset("weddingDate")}
+            >
+              날짜 초기화
+            </button>
           </div>
           <input
             type="date"
@@ -471,7 +469,7 @@ const Order = () => {
           />
         </WeddingDate>
         <AccountWrapper>
-          <legend>계좌 (선택)</legend>
+          <h4>계좌 (선택)</h4>
           <button type="button" onClick={(e) => addOptionField("account", e)}>
             {" "}
             계좌 추가
@@ -510,7 +508,7 @@ const Order = () => {
           </ul>
         </AccountWrapper>
         <AccountWrapper>
-          <legend>혼주 (선택)</legend>
+          <h4>혼주 (선택)</h4>
           <button type="button" onClick={(e) => addOptionField("parent", e)}>
             혼주
           </button>
@@ -591,7 +589,7 @@ const Order = () => {
           })}
         </AccountWrapper>
         <ThumnailWrapper>
-          <legend>썸네일</legend>
+          <h4>썸네일</h4>
           <button onClick={(e) => handleThumnailReset("thumnail", e)}>
             썸네일 이미지 초기화
           </button>
@@ -602,7 +600,7 @@ const Order = () => {
           })}
         </ThumnailWrapper>
         <GalleryWrapper>
-          <legend>갤러리</legend>
+          <h4>갤러리</h4>
           {/* 갤러리 하단에서 타입을 선택 => 타입을 선택하면 지정된 개수를 선택할수 있는 input type file 이 생성 */}
           <GalleryTypeDropdown>
             <div>타입선택</div>
@@ -734,7 +732,7 @@ const BadgeDropdown = styled.div<{
   }
 `;
 
-const AccountWrapper = styled.fieldset`
+const AccountWrapper = styled.div`
   margin: 1rem 0;
   & > ul {
     list-style: none;
@@ -790,6 +788,7 @@ const ErrorSpan = styled.div`
 
 const Form = styled.form`
   width: 80%;
+  min-width: 28rem;
 `;
 
 const Container = styled.div`
@@ -799,25 +798,34 @@ const Container = styled.div`
   height: 100vh;
 `;
 
-const WeddingDate = styled.fieldset``;
+const WeddingDate = styled.div``;
 
-const Address = styled.fieldset`
+const AddressWrapper = styled.div`
   display: flex;
-  & > div:last-child {
+  flex-direction: column;
+  & > div > div {
     display: flex;
-    flex-direction: column;
+
+    & > label {
+      min-width: 5rem;
+    }
+  }
+  & input[type="text"] {
+    outline: none;
+    height: 1.5rem;
+    width: 13rem;
   }
 `;
 
-const NameWrapper = styled.fieldset`
+const NameWrapper = styled.div`
   display: flex;
-
-  & > div {
-    display: flex;
-    flex-direction: column;
+  flex-direction: column;
+  & > div > input[type="text"] {
+    outline: none;
+    height: 1.5rem;
   }
 `;
 
-const ThumnailWrapper = styled.fieldset``;
+const ThumnailWrapper = styled.div``;
 
-const GalleryWrapper = styled.fieldset``;
+const GalleryWrapper = styled.div``;

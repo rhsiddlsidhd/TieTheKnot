@@ -3,6 +3,12 @@ import { SectionHeader, WeddingInvitationContainer } from "../../pages/Main";
 import styled from "styled-components";
 
 const GuestBook = () => {
+  /**
+   * 방명록 API
+   * C R U D
+   * domain book
+   */
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const value = "ddddddddddddddddddddddddd.";

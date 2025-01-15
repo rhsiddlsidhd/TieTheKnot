@@ -41,19 +41,18 @@ const UseDaumPostcodePopup = ({
     open({ onComplete: handleComplete });
   };
   return (
-    <>
+    <div>
+      <label>주소</label>
       <input
         style={{
-          width: `${orderData["weddingAddress"].length}em`,
-          minWidth: "13em",
+          minWidth: `${orderData["weddingAddress"].length}em`,
         }}
         type="text"
         onClick={() => handleDaumPopupOpen()}
         readOnly
         value={orderData["weddingAddress"]}
       />
-      {/* <input type="text" /> */}
-    </>
+    </div>
   );
 };
 export default UseDaumPostcodePopup;
