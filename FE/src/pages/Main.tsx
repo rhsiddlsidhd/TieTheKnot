@@ -16,13 +16,6 @@ import { WeddingDataAPI } from "../context/UserOrderDataContext";
 import { OrderFormData } from "./Order";
 import GuestBook from "../components/guestbook/GuestBook";
 
-/**
- * 데이터 수정
- *
- * 1) 기존주소 += 상세주소 ( BE 완,FE완)
- * 2) 신랑 성함 + 신부 성함 ( BE 완,FE완완)
- * 3) 부모님 여부 부/ 모 구분이 X => 기존 태그 / 신랑측 신부측 => 신랑측 부 , 신랑측 모, 신부측 부, 신부측 모 (BE,FE완)
- */
 export interface WeddingDay {
   year: number;
   month: number;
@@ -57,7 +50,6 @@ const Main = () => {
     lat: null,
   });
 
-  console.log(weddingData);
   useEffect(() => {
     const fetchUserOrderData = async () => {
       try {
@@ -210,11 +202,6 @@ const Main = () => {
   ];
 
   let time = convertToAMPM(hours, minutes);
-
-  // if (!galleryTypeData) {
-  //   return <div>로딩중</div>;
-  // }
-
   return (
     <div className="App">
       <Layout>
@@ -402,7 +389,7 @@ const Main = () => {
           <PrivateCarSections />
         </WeddingInvitationContainer>
 
-        <GuestBook />
+        <GuestBook _id={weddingData._id} />
       </Layout>
     </div>
   );

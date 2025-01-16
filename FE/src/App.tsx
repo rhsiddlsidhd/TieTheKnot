@@ -3,7 +3,7 @@ import Main from "./pages/Main";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Order from "./pages/Order";
-import Tset from "./tests/gallery/Test";
+import ObserverTest from "./tests/gusetbook/ObserverTest";
 import AuthContext from "./context/AuthContext";
 import UserOrderDataContext from "./context/UserOrderDataContext";
 
@@ -24,7 +24,7 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="/order" element={<Order />} />
       </Route>
-      <Route path="/test" element={<Tset />} />
+      <Route path="/test" element={<ObserverTest />} />
       {/* 유저 order 데이터를 전부 가져와서 전역상태로 관리 */}
       <Route element={<UserOrderDataContext />}>
         <Route path="/deploy" element={<Main />} />

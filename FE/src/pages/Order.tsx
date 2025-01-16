@@ -43,6 +43,7 @@ export interface OrderFormData {
   parent: Parent[];
   thumnail: string[];
   gallery: Gallery;
+  _id: string;
 }
 
 type Badge = "default" | "신랑측 부" | "신랑측 모" | "신부측 부" | "신부측 모";
@@ -65,6 +66,7 @@ const Order = () => {
     parent: [],
     thumnail: [],
     gallery: {},
+    _id: "",
   });
 
   useEffect(() => {
@@ -386,7 +388,7 @@ const Order = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Enter 키 눌렀을 때 form 제출 방지
+      e.preventDefault();
     }
   };
 
