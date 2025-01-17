@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post("/", guestBookController.postGuestbook);
 router.delete("/", guestBookController.deleteGuestBook);
-router.get("/:orderId", guestBookController.getTotalGuestbook);
+router.get("/", guestBookController.getTotalGuestbook);
 
 module.exports = router;

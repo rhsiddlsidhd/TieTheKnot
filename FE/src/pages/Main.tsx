@@ -7,7 +7,7 @@ import Calender from "../components/calenders/CalenderSections";
 import CountdownSections from "../components/calenders/CountdownSections";
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { GeoProps } from "../apis/api/location/kakaoMap/types";
 import NaviSections from "../components/locations/NaviSections";
 import PrivateCarSections from "../components/locations/PrivateCarSections";
@@ -30,6 +30,13 @@ type GalleryType = {
   };
 };
 const Main = () => {
+  const [visible, setVisible] = useState<
+    [string, { type: string; urls: string[] }][]
+  >([]);
+  const [parent, setParent] = useState<
+    Record<string, { name: string; isDeceased: string }>
+  >({});
+  const [isMoreVisible, setIsMoreVisible] = useState<boolean>(false);
   const [galleryTypeData, setGalleryTypeData] = useState<GalleryType | null>(
     null
   );
@@ -162,6 +169,33 @@ const Main = () => {
     }
   }, [weddingData, transformGalleryWithType]);
 
+  useEffect(() => {
+    if (galleryTypeData && Object.entries(galleryTypeData).length > 1) {
+      const item = Object.entries(galleryTypeData).slice(0, 1);
+      setVisible((prev) => {
+        const newItems = item.filter(
+          ([key]) => !prev.some(([prevKey]) => prevKey === key)
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [galleryTypeData]);
+
+  const transformParentData = (data: any[]) => {
+    return data.reduce((result, item) => {
+      result[item.badge] = {
+        name: item.name,
+        isDeceased: item.isDeceased,
+      };
+      return result;
+    }, {});
+  };
+
+  useEffect(() => {
+    if (weddingData) {
+      setParent(transformParentData(weddingData.parent));
+    }
+  }, [weddingData]);
   if (!weddingData) {
     return <div>로딩중...</div>;
   }
@@ -202,6 +236,24 @@ const Main = () => {
   ];
 
   let time = convertToAMPM(hours, minutes);
+
+  const handleIsMoreVisible = (
+    galleryTypeData: GalleryType,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    setIsMoreVisible(true);
+    const items = Object.entries(galleryTypeData).slice(1);
+
+    setVisible((prev) => [...prev, ...items]);
+  };
+
+  //더보기 버튼
+
+  //렌더가 된 div 이후에 높이가 계산이 되서
+
+  //현재 boolean을 올바로 가져오질 못하게 됨으로써 더보기 버튼이 렌더이후에 없음
+
+  //(수정안)checkOverFlow 의존성에 weddingData가 들어오면 렌더할 수 있도록 의존성 추가
   return (
     <div className="App">
       <Layout>
@@ -221,9 +273,8 @@ const Main = () => {
           </ImgWrapper>
           <DetailInfoWrapper>
             <div>
-              {/* 신랑 신부 이름이 없네 아오 .. 일단 계좌이름으로 */}
-              <span>{weddingData.account[0].name}</span> 💚{" "}
-              <span>{weddingData.account[1].name}</span>
+              <span>{weddingData.name.groom}</span> 💚{" "}
+              <span>{weddingData.name.bride}</span>
             </div>
             <div>
               <span>
@@ -244,7 +295,6 @@ const Main = () => {
               나로 하여금 보석으로 만들어가는 <br />
               과정이라고 생각한다.
             </div>
-
             <p>-션 SNS 中</p>
             <div>
               서로 다른 삶은 살아온 두 사람이
@@ -274,29 +324,31 @@ const Main = () => {
             {/* {Array.isArray(weddingData.parent) &&
             weddingData.parent.length > 0 ? (
               weddingData.parent.map((items) => {
-                console.log(items);
-                return (
-                  <div>
-                    {items.badge === "신랑측" && <span>{items.name}</span>}
-                    <div></div>
-                  </div>
-                );
+                const { badge, name, isDeceased } = items;
+                return <p>{<span>{items.name}</span>}</p>;
               })
             ) : (
-              <div></div>
+              <div>로딩중</div>
             )} */}
-            <p>
-              <span></span>
-              <span>아버지</span>
-              <span></span>
-              <span>어머니</span>의 장녀 <span>아무나</span>
-            </p>
-            <p>
-              <span></span>
-              <span>아버지</span>
-              <span></span>
-              <span>어머니</span>의 장녀 <span>아무나</span>
-            </p>
+
+            {parent && (
+              <p>
+                <span>{parent["신랑측 부"]?.isDeceased && "𐠦"}</span>
+                <span>{parent["신랑측 부"]?.name}</span>
+                <span>{parent["신랑측 모"]?.isDeceased && "𐠦"}</span>
+                <span>{parent["신랑측 모"]?.name}</span>
+                <span>의 장남 {weddingData.name.groom}</span>
+              </p>
+            )}
+            {parent && (
+              <p>
+                <span>{parent["신부측 부"]?.isDeceased && "𐠦"}</span>
+                <span>{parent["신부측 부"]?.name}</span>
+                <span>{parent["신부측 모"]?.isDeceased && "𐠦"}</span>
+                <span>{parent["신부측 모"]?.name}</span>
+                <span>의 장녀 {weddingData.name.bride}</span>
+              </p>
+            )}
           </ContentWrapper>
           <BtnWrapper>
             <button>
@@ -332,33 +384,41 @@ const Main = () => {
             <p>GALLERY</p>
             <h3>우리의 순간</h3>
           </SectionHeader>
-          {galleryTypeData ? (
-            Object.entries(galleryTypeData).map(([id, value], i) => {
-              const type = value.type;
-              return (
-                <GalleryWrapper key={i} id={id} $gridTemplateAreas={type}>
-                  {Array.isArray(value.urls) ? (
-                    value.urls.map((url, i) => {
-                      const letter = String.fromCharCode(97 + i);
-                      return (
-                        <img
-                          key={i}
-                          className={`items item${i + 1}`}
-                          src={`http://localhost:8080/upload/${url}`}
-                          alt="이미지"
-                          style={{ gridArea: letter }}
-                        />
-                      );
-                    })
-                  ) : (
-                    <div>로딩중</div>
-                  )}
-                </GalleryWrapper>
-              );
-            })
-          ) : (
-            <div>로딩중</div>
-          )}
+          <SectionContent $isMoreVisible={isMoreVisible}>
+            {visible ? (
+              visible.map(([id, value], i) => {
+                const type = value.type;
+                return (
+                  <GalleryWrapper key={i} id={id} $gridTemplateAreas={type}>
+                    {Array.isArray(value.urls) ? (
+                      value.urls.map((url, i) => {
+                        const letter = String.fromCharCode(97 + i);
+                        return (
+                          <img
+                            key={i}
+                            className={`items item${i + 1}`}
+                            src={`http://localhost:8080/upload/${url}`}
+                            alt="이미지"
+                            style={{ gridArea: letter }}
+                          />
+                        );
+                      })
+                    ) : (
+                      <div>로딩중</div>
+                    )}
+                  </GalleryWrapper>
+                );
+              })
+            ) : (
+              <div>로딩중</div>
+            )}
+            {galleryTypeData && Object.keys(galleryTypeData).length > 2 && (
+              <VisibleBtn
+                $isMoreVisible={isMoreVisible}
+                onClick={(e) => handleIsMoreVisible(galleryTypeData, e)}
+              ></VisibleBtn>
+            )}
+          </SectionContent>
           <CalendarWrapper>
             <h1>{`${year}.${month}.${date}`}</h1>
             <h3
@@ -388,7 +448,6 @@ const Main = () => {
           <BusSections geoState={geoState} />
           <PrivateCarSections />
         </WeddingInvitationContainer>
-
         <GuestBook _id={weddingData._id} />
       </Layout>
     </div>
@@ -396,6 +455,43 @@ const Main = () => {
 };
 
 export default Main;
+const SectionContent = styled.div<{ $isMoreVisible: boolean }>`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 5rem;
+`;
+
+const VisibleBtn = styled.button<{ $isMoreVisible: boolean }>`
+  width: 100%;
+  height: 100px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  border: none;
+  background: linear-gradient(to bottom, transparent 0%, white 30%, white 100%);
+  opacity: ${(props) => (props.$isMoreVisible ? 0 : 1)};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  &:hover::before {
+    content: "↑";
+    border-radius: 10px;
+    padding: 0.25rem 0.65rem;
+    transform: rotate(180deg);
+    transition: transform 0.5s ease-out;
+  }
+
+  &::before {
+    content: "•••";
+    padding: 0 0.5rem 0.5rem 0.5rem;
+    border-radius: 10px;
+  }
+`;
+
 const CalendarWrapper = styled.div`
   width: 90%;
   display: flex;

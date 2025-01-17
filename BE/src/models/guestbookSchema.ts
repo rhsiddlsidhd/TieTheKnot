@@ -5,27 +5,32 @@ interface GuestBook {
   nickname: string;
   password: string;
   content: string;
-  orderId: string;
+  orderId: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const guestBookSchema = new Schema<GuestBook>({
-  nickname: {
-    type: String,
-    required: true,
+const guestBookSchema = new Schema<GuestBook>(
+  {
+    nickname: {
+      type: String,
+      required: true,
+    },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
   },
-  orderId: {
-    type: String,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-});
+  { timestamps: true }
+);
 
 const GuestBook = mongoose.model<GuestBook>("GuestBook", guestBookSchema);
 

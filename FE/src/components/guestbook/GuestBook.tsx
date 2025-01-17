@@ -21,8 +21,8 @@ type Guestbook = Omit<GuestbookFormData, "orderId" | "password">;
 export type DeleteFormData = Omit<GuestbookFormData, "content">;
 
 const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
-  const { ref, inView } = useInView({ threshold: 1 });
-
+  const { ref, inView } = useInView({ threshold: 0.5 });
+  const textAreaRef = useRef<(HTMLTextAreaElement | null)[]>([]);
   /**
    * 방명록 API
    * C R U D
@@ -31,10 +31,11 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
 
   /**
    * 개선 방향
-   * 1.방명록에 글이 넘칠때 area의 높이 또한 같이 늘어나기 (미완)
+   * 1.방명록에 글이 넘칠때 area의 높이 또한 같이 늘어나기 (완)
    * 2.post delete 최신화 (완)
    * 3.데이터 error 처리 (미완)
    * 4.api 미들웨어 처리 (미완)
+   * 5.input 에 이모지 라이브러리 (미완)
    */
 
   const pageRef = useRef<number>(1);
@@ -63,7 +64,6 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
   useEffect(() => {
     const fetchGuestbook = async (id: string, page: number) => {
       const { data, hasMore } = await getGuestbook(id, page);
-
       setMore(hasMore);
       setGuestbook((prev) => {
         if (prev.length === 0) {
@@ -76,7 +76,6 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
     };
 
     if (inView && more) {
-      console.log("~");
       fetchGuestbook(guestbookId, pageRef.current);
     }
   }, [inView, more, guestbookId]);
@@ -102,8 +101,6 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
     }
   }, [guestbookId]);
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const handleTogglePost: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
     setIsPost(!isPost);
@@ -119,9 +116,7 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
   const postGuestbook = async (formData: GuestbookFormData) => {
     try {
       const res = await axios.post(`http://localhost:8080/book`, formData);
-
       const data = res.data;
-
       const dataArray = Array.isArray(data) ? data : [data];
 
       setGuestbook((prev) => [...dataArray, ...prev]);
@@ -207,6 +202,18 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
     }
   };
 
+  useEffect(() => {
+    const areaHeight = () => {
+      textAreaRef.current.forEach((area) => {
+        if (area) {
+          area.style.height = "auto";
+          area.style.height = `${area.scrollHeight}px`;
+        }
+      });
+    };
+    areaHeight();
+  }, [guestbook]);
+
   return (
     <WeddingInvitationContainer>
       <SectionHeader>
@@ -251,7 +258,11 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
                   </button>
                 </DeleteDiv>
               )}
-              <textarea ref={textareaRef} readOnly value={content} />
+              <textarea
+                ref={(el) => (textAreaRef.current[i] = el)}
+                readOnly
+                value={content}
+              />
             </Section>
           );
         })}
@@ -297,7 +308,6 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
           />
         </Section>
       </FormWrapper>
-      <div style={{ height: "500px" }}></div>
     </WeddingInvitationContainer>
   );
 };
@@ -308,9 +318,10 @@ const commonFormStyle = `
       width: 80%;
       display: flex;
       align-items: center;
-      height:1.5rem;
+      height:2rem;
       border-bottom:1px solid #EAEAEA;
       justify-content: space-between;
+      margin-bottom:0.5rem;
       & > input {
         width: 60%;
         height:100%;
@@ -343,14 +354,14 @@ const commonFormStyle = `
 const commonSectionStyle = `
     box-shadow: rgba(0, 0, 0, 0.2) 0px 7px 29px 0px;
     border-radius: 1rem;
-    width: 80%;
-    min-height: 7rem;
+    width: 80%;   
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    margin-bottom: 1.25rem;
-    margin-top:1.25rem;
+    margin:1.25rem 0;
+    padding:0.5rem;
+  
     & > textarea {
       width: 80%;
       border: none;
@@ -358,12 +369,12 @@ const commonSectionStyle = `
       resize: none;
       outline: none;
       overflow: hidden;
-      line-height: 1.5;
-      min-height: 3rem;
+      
     }
     & > textarea:not([readonly]){
     box-shadow: rgba(0, 0, 0, 0.2) 0px 7px 29px 0px;
     border-radius:0.25rem;
+    height:5rem;
     background-color:#EAEAEA;
     }
 
@@ -376,7 +387,6 @@ const wrapper = `
   display: flex;
   flex-direction: column;
   align-items: center;
-  
 `;
 
 const PostsWrapper = styled.div`
@@ -396,8 +406,8 @@ const Section = styled.section<{ $inView?: boolean; $more?: boolean }>`
   ${commonSectionStyle}
   opacity: ${(props) => (props.$inView && props.$more ? 0 : 1)};
   transform: ${(props) =>
-    props.$inView && props.$more ? `translateY(50px)` : `translateY(0px)`};
-  transition: all 5s;
+    props.$inView && props.$more ? `translateY(100px)` : `translateY(0px)`};
+  transition: opacity 3s, transform 3s;
 `;
 
 const DeleteForm = styled.form`

@@ -1,20 +1,42 @@
 import { Request, Response } from "express";
 import GuestBook from "../models/guestbookSchema";
 import { CustomError } from "./oauthController";
-import { genSaltSync, hashSync } from "bcrypt-ts";
 import passwordService from "../services/passwordService";
+import mongoose from "mongoose";
 
 class GuestbookController {
   getTotalGuestbook = async (req: Request, res: Response) => {
     try {
-      const { orderId } = req.params;
+      const limit = Number(req.query.limit);
+      const page = Number(req.query.page);
+      const orderId = req.query.id;
 
-      const findGusetbooks = await GuestBook.find(
+      if (isNaN(limit) || isNaN(page) || limit <= 0 || page <= 0) {
+        throw new CustomError(400, "limit and page is impossible");
+      }
+
+      const totaldata = await GuestBook.find(
         { orderId },
-        "-__v -orderId -_id"
+        "-__v -orderId -_id -password -updatedAt"
       );
 
-      res.status(200).json({ findGusetbooks });
+      const data = await GuestBook.find(
+        { orderId },
+        "-__v -orderId -_id -password -updatedAt -createdAt"
+      )
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+      res.status(200).json({
+        data,
+        tatalCount: totaldata.length,
+        currentPage: page,
+        pageSize: limit,
+        totalPages: Math.ceil(totaldata.length / limit),
+        hasMore: page < Math.ceil(totaldata.length / limit),
+        nextPage: page + 1,
+      });
     } catch (error) {
       if (error instanceof CustomError) {
         res.status(error.status).json({
@@ -43,20 +65,20 @@ class GuestbookController {
       }
 
       const hash = passwordService.hashToPassword(password);
+      const orderObjectId = new mongoose.Types.ObjectId(String(orderId));
 
-      //중복닉네임은 저장 X
-      const gusetbook = new GuestBook({
+      const newData = new GuestBook({
         nickname,
-        orderId,
+        orderId: orderObjectId,
         password: hash,
         content,
       });
 
-      await gusetbook.save();
+      await newData.save();
 
-      res.status(200).json({
-        message: "POST_SUCCESS",
-      });
+      const data = { nickname: newData.nickname, content: newData.content };
+
+      res.status(200).json(data);
     } catch (error) {
       if (error instanceof CustomError) {
         res.status(error.status).json({
@@ -82,7 +104,7 @@ class GuestbookController {
       const getGuestbookByNickname = await GuestBook.findOne({ nickname });
 
       if (!getGuestbookByNickname) {
-        throw new CustomError(400, "게시글이 존재하지 않습니다.");
+        throw new CustomError(400, "닉네임이 틀렸습니다.");
       }
       passwordService.checkToPassword(
         password,
@@ -91,9 +113,10 @@ class GuestbookController {
 
       await GuestBook.deleteOne({ nickname });
 
-      res.status(200).json({
-        message: "DELETE_SUCCESS",
-      });
+      const data = {
+        nickname,
+      };
+      res.status(200).json(data);
     } catch (error) {
       if (error instanceof CustomError) {
         res.status(error.status).json({
