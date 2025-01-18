@@ -4,8 +4,14 @@ import { AuthContextAPI } from "../context/AuthContext";
 import { getGoogleOAuth } from "../apis/api/auth/google/getGoogleOAuth";
 import { AuthCuntomError } from "../apis/utils/instanceOfAuth";
 
-const useAuthFailRedirect = (): { isAuth: boolean } => {
+const UseAuthSuccessRedirect = () => {
   const navigate = useNavigate();
+  /**
+   * 무한렌더링
+   * 마운트시 동기 함수가 비동기 함수보다 먼저 실행되기 때문에
+   * 경로이동을 먼저 하고 난 이후에 인증이 이뤄지는 현상
+   *  */
+
   const value = useContext(AuthContextAPI);
 
   const { isAuth, setIsAuth } = value || { isAuth: false };
@@ -13,12 +19,9 @@ const useAuthFailRedirect = (): { isAuth: boolean } => {
   const fetchUser = async (
     setIsAuth: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
-    if (!setIsAuth) return;
     try {
       const { message } = await getGoogleOAuth();
-
       if (message === "LOGIN_SUCCESS") {
-        console.log(message);
         setIsAuth(true);
       }
     } catch (error) {
@@ -37,15 +40,14 @@ const useAuthFailRedirect = (): { isAuth: boolean } => {
   };
 
   const checkAuth = useCallback(() => {
-    const path: string = "/";
-
-    if (!isAuth && window.location.pathname !== path) {
+    const path = "/register";
+    if (isAuth && window.location.pathname !== path) {
       navigate(path);
     }
   }, [isAuth, navigate]);
 
   useEffect(() => {
-    if (isAuth && setIsAuth) {
+    if (!isAuth && setIsAuth) {
       fetchUser(setIsAuth);
     }
   }, [isAuth, setIsAuth]);
@@ -53,8 +55,7 @@ const useAuthFailRedirect = (): { isAuth: boolean } => {
   useEffect(() => {
     checkAuth();
   }, [isAuth, checkAuth]);
-
-  return { isAuth };
+  return null;
 };
 
-export default useAuthFailRedirect;
+export default UseAuthSuccessRedirect;

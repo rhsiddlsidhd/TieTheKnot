@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import useAuthFailRedirect from "../hooks/useAuthFailRedirect";
+
 import { postOrderInvite } from "../apis/api/order/postOrderInvite";
 import { generateRandomId } from "../utils/generateRandomId";
 import { useNavigate } from "react-router";
@@ -9,6 +9,7 @@ import { createMaxLengthUrls, transformFilesToUrls } from "../utils/urlUtils";
 import UseDaumPostcodePopup from "../hooks/UseDaumPostcodePopup";
 import { handleError } from "./../utils/error/errorHandler";
 import { updateField } from "../utils/orderFormUtils";
+import UseAuthFailRedirect from "../hooks/UseAuthFailRedirect";
 
 export interface Gallery {
   [key: string]: {
@@ -49,7 +50,7 @@ export interface OrderFormData {
 type Badge = "default" | "신랑측 부" | "신랑측 모" | "신부측 부" | "신부측 모";
 
 const Order = () => {
-  useAuthFailRedirect();
+  UseAuthFailRedirect();
 
   const navigate = useNavigate();
   const badge = ["신랑측 부", "신랑측 모", "신부측 부", "신부측 모"];

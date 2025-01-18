@@ -217,8 +217,8 @@ const GuestBook: React.FC<GuestBookProps> = ({ _id }) => {
   return (
     <WeddingInvitationContainer>
       <SectionHeader>
-        <p>GusetBook</p>
-        <h3>방명록 </h3>
+        <p>G u s e t B o o k</p>
+        <h3>방 명 록 </h3>
       </SectionHeader>
       <PostsWrapper>
         {guestbook.map((item, i) => {

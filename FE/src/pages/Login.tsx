@@ -1,5 +1,5 @@
 import { Outlet } from "react-router";
-import useAuthSuccessRedirect from "../hooks/useAuthSuccessRedirect";
+import UseAuthSuccessRedirect from "../hooks/UseAuthSuccessRedirect";
 
 const Login = () => {
   /**
@@ -7,7 +7,7 @@ const Login = () => {
    * 2. 주문하기 / 내 주문 보기 (로그인유저만)
    */
 
-  useAuthSuccessRedirect();
+  UseAuthSuccessRedirect();
   const handleGoogleAuth = () => {
     if (process.env.REACT_APP_GOOGLE_AUTH_LOCATION_URL) {
       window.location.href = process.env.REACT_APP_GOOGLE_AUTH_LOCATION_URL;

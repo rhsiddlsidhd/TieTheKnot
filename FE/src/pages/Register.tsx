@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router";
 import styled from "styled-components";
-import useAuthFailRedirect from "../hooks/useAuthFailRedirect";
+import UseAuthFailRedirect from "../hooks/UseAuthFailRedirect";
 
 const Register = () => {
-  const isAuth = useAuthFailRedirect();
+  const isAuth = UseAuthFailRedirect();
   const navigate = useNavigate();
   const navigateOrderPage = () => {
     navigate("/order");

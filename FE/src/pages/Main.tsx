@@ -7,7 +7,7 @@ import Calender from "../components/calenders/CalenderSections";
 import CountdownSections from "../components/calenders/CountdownSections";
 import SubwaySections from "../components/locations/SubwaySections";
 import BusSections from "../components/locations/BusSections";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { GeoProps } from "../apis/api/location/kakaoMap/types";
 import NaviSections from "../components/locations/NaviSections";
 import PrivateCarSections from "../components/locations/PrivateCarSections";
@@ -15,6 +15,9 @@ import axios from "axios";
 import { WeddingDataAPI } from "../context/UserOrderDataContext";
 import { OrderFormData } from "./Order";
 import GuestBook from "../components/guestbook/GuestBook";
+import Account from "../components/account/Account";
+import AccountSection from "../components/account/Account";
+import Footer from "../Layout/Footer";
 
 export interface WeddingDay {
   year: number;
@@ -196,6 +199,7 @@ const Main = () => {
       setParent(transformParentData(weddingData.parent));
     }
   }, [weddingData]);
+
   if (!weddingData) {
     return <div>로딩중...</div>;
   }
@@ -320,17 +324,6 @@ const Main = () => {
             />
           </ImgWrapper>
           <ContentWrapper>
-            {/* 부모님 여부 부/ 모 구분이 없다 추가해야함  */}
-            {/* {Array.isArray(weddingData.parent) &&
-            weddingData.parent.length > 0 ? (
-              weddingData.parent.map((items) => {
-                const { badge, name, isDeceased } = items;
-                return <p>{<span>{items.name}</span>}</p>;
-              })
-            ) : (
-              <div>로딩중</div>
-            )} */}
-
             {parent && (
               <p>
                 <span>{parent["신랑측 부"]?.isDeceased && "𐠦"}</span>
@@ -449,6 +442,8 @@ const Main = () => {
           <PrivateCarSections />
         </WeddingInvitationContainer>
         <GuestBook _id={weddingData._id} />
+        <AccountSection account={weddingData.account} />
+        <Footer />
       </Layout>
     </div>
   );
