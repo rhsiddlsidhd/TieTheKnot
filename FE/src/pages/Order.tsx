@@ -60,7 +60,7 @@ const Order = () => {
   const [weddingDate, setWeddingDate] = useState<string[]>([]);
   const [orderData, setOrderData] = useState<OrderFormData>({
     name: { groom: "", bride: "" },
-    weddingAddress: "",
+    weddingAddress: "", 
     weddingAddressDetail: "",
     weddingDate: "",
     account: [],
@@ -116,6 +116,31 @@ const Order = () => {
     }
   };
 
+  //해당함수의 역할은 e.target.value를 setOrderData의 객체에 넣어야함
+
+  const handleTest = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setOrderData: React.Dispatch<React.SetStateAction<any>>,
+    fields: string[]
+  ) => {
+    if (!Array.isArray(fields)) return;
+    e.preventDefault();
+
+    const value = e.target.value;
+
+    setOrderData((prev: any) => {
+      const nestedUpdatedField = (prev: any, field: any): any => {
+        const [key, ...restKey] = field;
+        if (restKey.length === 0) {
+          return { ...prev, [key]: value };
+        }
+        return { ...prev, [key]: nestedUpdatedField(prev[key], restKey) };
+      };
+
+      return nestedUpdatedField(prev, fields);
+    });
+  };
+
   const handleTextOnChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     fields?: string
@@ -129,9 +154,6 @@ const Order = () => {
         weddingAddressDetail: value,
       }));
     } else {
-      //중첩객체에 깊이 들어갈때 keyof 타입 확정에 대해 어려움을 겪는다 하오..
-      //부족함이 너무많다 하ㅏㅏㅏㅏ
-
       setOrderData((prev) => {
         const fieldArray = fields.split(".");
         const lastField = fieldArray.pop();
@@ -370,6 +392,7 @@ const Order = () => {
     setWeddingDate: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
     const { value, type } = e.currentTarget;
+    console.log(type);
     setWeddingDate((prev) => {
       if (type === "date" && prev.length < 1) {
         return [...prev, value];
@@ -408,7 +431,7 @@ const Order = () => {
               id="groom-name"
               type="text"
               placeholder="신랑 성함"
-              onChange={(e) => handleTextOnChange(e, "name.groom")}
+              onChange={(e) => handleTest(e, setOrderData, ["name", "groom"])}
               onKeyDown={handleKeyPress}
             />
             <label htmlFor="bride-name">신부</label>
@@ -416,7 +439,7 @@ const Order = () => {
               id="bride-name"
               type="text"
               placeholder="신부 성함"
-              onChange={(e) => handleTextOnChange(e, "name.bride")}
+              onChange={(e) => handleTest(e, setOrderData, ["name", "bride"])}
               onKeyDown={handleKeyPress}
             />
           </div>
@@ -456,11 +479,13 @@ const Order = () => {
           </div>
           <input
             type="date"
-            onChange={(e) => handleWeddingDateTime(e, setWeddingDate)}
+            // onChange={(e) => handleWeddingDateTime(e, setWeddingDate)}
+            onChange={(e) => handleTest(e, setOrderData, ["weddingDate"])}
           />
           <input
             type="time"
-            onChange={(e) => handleWeddingDateTime(e, setWeddingDate)}
+            // onChange={(e) => handleWeddingDateTime(e, setWeddingDate)}
+            onChange={(e) => handleTest(e, setOrderData, ["weddingDate"])}
             id="timeInput"
           />
           <br />

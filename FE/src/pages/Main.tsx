@@ -15,15 +15,17 @@ import axios from "axios";
 import { WeddingDataAPI } from "../context/UserOrderDataContext";
 import { OrderFormData } from "./Order";
 import GuestBook from "../components/guestbook/GuestBook";
-import Account from "../components/account/Account";
 import AccountSection from "../components/account/Account";
 import Footer from "../Layout/Footer";
+import Thumnail from "../components/thumnail/Thumnail";
+import Invitation from "../components/invitation/Invitation";
 
+export type WeekDays = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export interface WeddingDay {
   year: number;
   month: number;
   date: number;
-  day: number;
+  day: WeekDays;
 }
 
 type GalleryType = {
@@ -36,9 +38,9 @@ const Main = () => {
   const [visible, setVisible] = useState<
     [string, { type: string; urls: string[] }][]
   >([]);
-  const [parent, setParent] = useState<
-    Record<string, { name: string; isDeceased: string }>
-  >({});
+  // const [parent, setParent] = useState<
+  //   Record<string, { name: string; isDeceased: string }>
+  // >({});
   const [isMoreVisible, setIsMoreVisible] = useState<boolean>(false);
   const [galleryTypeData, setGalleryTypeData] = useState<GalleryType | null>(
     null
@@ -184,21 +186,21 @@ const Main = () => {
     }
   }, [galleryTypeData]);
 
-  const transformParentData = (data: any[]) => {
-    return data.reduce((result, item) => {
-      result[item.badge] = {
-        name: item.name,
-        isDeceased: item.isDeceased,
-      };
-      return result;
-    }, {});
-  };
+  // const transformParentData = (data: any[]) => {
+  //   return data.reduce((result, item) => {
+  //     result[item.badge] = {
+  //       name: item.name,
+  //       isDeceased: item.isDeceased,
+  //     };
+  //     return result;
+  //   }, {});
+  // };
 
-  useEffect(() => {
-    if (weddingData) {
-      setParent(transformParentData(weddingData.parent));
-    }
-  }, [weddingData]);
+  // useEffect(() => {
+  //   if (weddingData) {
+  //     setParent(transformParentData(weddingData.parent));
+  //   }
+  // }, [weddingData]);
 
   if (!weddingData) {
     return <div>로딩중...</div>;
@@ -208,7 +210,7 @@ const Main = () => {
     year: newDate.getFullYear(),
     month: newDate.getMonth() + 1,
     date: newDate.getDate(),
-    day: newDate.getDay(),
+    day: newDate.getDay() as WeekDays,
   };
 
   const weddingTime = {
@@ -229,16 +231,6 @@ const Main = () => {
     "토요일",
   ];
 
-  const weekdaysOfEng = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-
   let time = convertToAMPM(hours, minutes);
 
   const handleIsMoreVisible = (
@@ -251,6 +243,7 @@ const Main = () => {
     setVisible((prev) => [...prev, ...items]);
   };
 
+  console.log(weddingData);
   //더보기 버튼
 
   //렌더가 된 div 이후에 높이가 계산이 되서
@@ -261,34 +254,14 @@ const Main = () => {
   return (
     <div className="App">
       <Layout>
-        <WeddingInvitationContainer>
-          <MusicIconBox>음악아이콘</MusicIconBox>
-          <SectionHeader $isfirstsection>
-            <div>
-              {year}/{month}/{date}
-            </div>
-            <div>{weekdaysOfEng[day]}</div>
-          </SectionHeader>
-          <ImgWrapper $thumnail>
-            <img
-              src={`http://localhost:8080/upload/${weddingData.thumnail[0]}`}
-              alt="이미지"
-            />
-          </ImgWrapper>
-          <DetailInfoWrapper>
-            <div>
-              <span>{weddingData.name.groom}</span> 💚{" "}
-              <span>{weddingData.name.bride}</span>
-            </div>
-            <div>
-              <span>
-                {year}년 {month}월 {date}일{`${weekdaysOfKr[day]} ${time}`}
-              </span>
-              <span>{weddingData.weddingAddressDetail}</span>
-            </div>
-          </DetailInfoWrapper>
-        </WeddingInvitationContainer>
-        <WeddingInvitationContainer>
+        <MusicIconBox>음악아이콘</MusicIconBox>
+        <Thumnail
+          weddingDay={weddingDay}
+          weddingTime={weddingTime}
+          weddingData={weddingData}
+        />
+        <Invitation weddingData={weddingData} />
+        {/* <WeddingInvitationContainer>
           <SectionHeader>
             <p>Invitation</p>
             <h3>소중한 분들을 초대합니다</h3>
@@ -348,7 +321,7 @@ const Main = () => {
               🗞️<span>연락하기</span>
             </button>
           </BtnWrapper>
-        </WeddingInvitationContainer>
+        </WeddingInvitationContainer> */}
         <WeddingInvitationContainer>
           <SectionHeader>
             <p>INTERVIEW</p>
@@ -545,9 +518,9 @@ const MusicIconBox = styled.div`
   justify-content: end;
 `;
 
-export const SectionHeader = styled.section<{ $isfirstsection?: boolean }>`
-  color: ${(props) => (props.$isfirstsection ? "black" : "pink")};
-  margin-bottom: ${(props) => (props.$isfirstsection ? "0" : "3rem")};
+export const SectionHeader = styled.section<{ $isDefualtstyle?: boolean }>`
+  color: ${(props) => (props.$isDefualtstyle ? "black" : "pink")};
+  margin-bottom: ${(props) => (props.$isDefualtstyle ? "0" : "3rem")};
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -579,7 +552,7 @@ const DetailInfoWrapper = styled.div`
   }
   > div:last-child {
     flex-direction: column;
-    padding-top: 1rem;
+    margin-top: 1rem;
   }
 `;
 

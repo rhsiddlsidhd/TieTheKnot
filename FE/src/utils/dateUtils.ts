@@ -1,3 +1,30 @@
+import { WeekDays } from "../pages/Main";
+import { Lang } from "../types";
+
+export const calculateweekdays = (day: WeekDays, lang: Lang) => {
+  const weekdaysOfKr = [
+    "일요일",
+    "월요일",
+    "화요일",
+    "수요일",
+    "목요일",
+    "금요일",
+    "토요일",
+  ];
+
+  const weekdaysOfEng = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  return lang === "kr" ? weekdaysOfKr[day] : weekdaysOfEng[day];
+};
+
 export const getDayOfMonth = (year: number, month: number) => {
   const dayInMonth = [];
   const start = new Date(year, month - 1, 1).getDay();

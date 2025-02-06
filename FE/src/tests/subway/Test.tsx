@@ -102,10 +102,12 @@ const Test = () => {
       "#6F99D0",
     ];
     const newMap = new Map<string, string>();
-    const sotredLineData = [
+    const sortedLineData = [
       ...new Set(data.map((item) => item.LINE_NUM).sort()),
     ];
-    sotredLineData.forEach((lineNum, i) => {
+
+    
+    sortedLineData.forEach((lineNum, i) => {
       newMap.set(lineNum, i < setColor.length ? setColor[i] : "#000000");
     });
     return newMap;

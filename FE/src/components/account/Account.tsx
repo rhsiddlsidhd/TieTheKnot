@@ -66,14 +66,19 @@ const AccountSection = ({ account }: AccountSectionProps) => {
         <h3>마 음 전 하 실 곳</h3>
       </SectionHeader>
       <AccountWrapper>
-        {noticeMessage.map((message) => {
-          return <NoticeMessage>{message}</NoticeMessage>;
+        {noticeMessage.map((message, i) => {
+          return <NoticeMessage key={i}>{message}</NoticeMessage>;
         })}
         <AccountInfo>
-          {account.map((item) => {
+          {account.map((item, i) => {
             const { accountNumber, bankName, name } = item;
+
             return (
-              <AccountDropdown $isDrop={isDrop[name]} $listHeight={listHeight}>
+              <AccountDropdown
+                key={i}
+                $isDrop={isDrop[name]}
+                $listHeight={listHeight}
+              >
                 <div className="title" onClick={(e) => handleDropdown(e, name)}>
                   신랑측 계좌번호
                 </div>

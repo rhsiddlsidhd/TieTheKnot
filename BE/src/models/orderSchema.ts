@@ -52,6 +52,7 @@ const orderSchema = new Schema<OrderSchema>({
         type: String,
       },
     },
+    _id: false,
     required: true,
   },
   weddingAddress: {
@@ -74,6 +75,7 @@ const orderSchema = new Schema<OrderSchema>({
         accountNumber: { type: String, required: true },
       },
     ],
+    _id: false,
     default: null,
   },
   parent: {
@@ -93,6 +95,7 @@ const orderSchema = new Schema<OrderSchema>({
         },
       },
     ],
+    _id: false,
     default: null,
   },
   thumnail: {
